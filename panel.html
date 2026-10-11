@@ -416,11 +416,9 @@ canvas{position:fixed;inset:0;z-index:0;}
 
       <!-- Üyeler -->
       <div class="tab-content" id="lt-members">
-        <div class="member-list">
-          <div class="mi"><div class="mav">A</div><div><div class="mname">admin</div><div class="mrole">KURUCU</div></div><span class="mstat mon">ONLİNE</span></div>
-          <div class="mi"><div class="mav">K</div><div><div class="mname">kurucu</div><div class="mrole">KUİLDER</div></div><span class="mstat mon">ONLİNE</span></div>
-          <div class="mi"><div class="mav">G</div><div><div class="mname">ghost_01</div><div class="mrole">ANALİST</div></div><span class="mstat moff">OFFLİNE</span></div>
-          <div class="mi"><div class="mav">X</div><div><div class="mname">xshadow</div><div class="mrole">PENTEST</div></div><span class="mstat moff">OFFLİNE</span></div>
+        <div class="member-list" id="memberList">
+          <div class="mi"><div class="mav">E</div><div><div class="mname">Ensar Sert</div><div class="mrole">KURUCU</div></div><span class="mstat mon" id="stat-ensar">ONLİNE</span></div>
+          <div class="mi"><div class="mav">C</div><div><div class="mname">Cinss Akyüz</div><div class="mrole">KUİLDER</div></div><span class="mstat moff" id="stat-cinss">OFFLİNE</span></div>
         </div>
       </div>
 
@@ -458,8 +456,8 @@ canvas{position:fixed;inset:0;z-index:0;}
         <div class="csec-title">// DASHBOARD</div>
         <div class="stats-row">
           <div class="stat-card"><div class="stat-num" id="statProj">0</div><div class="stat-label">PROJE</div></div>
-          <div class="stat-card"><div class="stat-num">4</div><div class="stat-label">ÜYELER</div></div>
-          <div class="stat-card"><div class="stat-num" id="statOnline">2</div><div class="stat-label">ONLİNE</div></div>
+          <div class="stat-card"><div class="stat-num">2</div><div class="stat-label">ÜYELER</div></div>
+          <div class="stat-card"><div class="stat-num" id="statOnline">1</div><div class="stat-label">ONLİNE</div></div>
           <div class="stat-card"><div class="stat-num" id="statTools">6</div><div class="stat-label">ARAÇLAR</div></div>
         </div>
       </div>
@@ -523,7 +521,7 @@ canvas{position:fixed;inset:0;z-index:0;}
 
       <!-- BİLDİRİMLER -->
       <div class="rtab-content" id="rp-notif">
-        <div class="notif-list">
+        <div class="notif-list" id="notif-list-inner">
           <div class="notif-item unread"><div class="ntype">YENİ ÜYELER</div><div class="ntext">xshadow takıma katıldı</div><div class="ntime">5 dakika önce</div></div>
           <div class="notif-item unread"><div class="ntype">PROJE</div><div class="ntext">Subdomain Tarayıcı güncellendi</div><div class="ntime">12 dakika önce</div></div>
           <div class="notif-item unread"><div class="ntype">GÜVENLİK</div><div class="ntext">Bilinmeyen IP bağlantı denemesi</div><div class="ntime">1 saat önce</div></div>
@@ -1023,6 +1021,65 @@ fbScript1.textContent = `
     const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
     push(msgsRef, { user: usr2, text: text, time: time, ts: Date.now() });
   };
+
+  // Katılım taleplerini dinle
+  const katilimRef = ref(db, 'katilim');
+  let ilkYukleme = true;
+  let sonTs = 0;
+  onValue(katilimRef, (snapshot) => {
+    const data = snapshot.val();
+    if (!data) return;
+    const talepler = Object.values(data);
+    if (ilkYukleme) {
+      const maxTs = Math.max(...talepler.map(t => t.ts||0));
+      sonTs = maxTs;
+      talepler.forEach(t => ekleKatilimBildirimi(t, false));
+      const badge = document.getElementById('nbadge');
+      if (badge && talepler.length > 0) {
+        badge.style.display = 'flex';
+        badge.textContent = talepler.length;
+      }
+      ilkYukleme = false;
+    } else {
+      talepler.forEach(t => {
+        if ((t.ts||0) > sonTs) {
+          sonTs = t.ts;
+          ekleKatilimBildirimi(t, true);
+          const badge = document.getElementById('nbadge');
+          if (badge) {
+            badge.style.display = 'flex';
+            badge.textContent = (parseInt(badge.textContent)||0) + 1;
+          }
+        }
+      });
+    }
+  });
+
+  function ekleKatilimBildirimi(t, yeni) {
+    const liste = document.getElementById('notif-list-inner');
+    if (!liste) return;
+    const div = document.createElement('div');
+    div.className = yeni ? 'notif-item unread' : 'notif-item unread';
+    div.innerHTML =
+      '<div class="ntype">🔔 KATILİM TALEBİ</div>' +
+      '<div class="ntext"><b>' + (t.isim||'?') + '</b> katılmak istiyor</div>' +
+      '<div class="ntext" style="color:#5ab4ff;margin-top:3px;">📞 ' + (t.telefon||'?') + '</div>' +
+      '<div class="ntext" style="color:#adc8e8;margin-top:2px;">💼 ' + (t.uzmanlik||'?') + '</div>' +
+      (t.mesaj ? '<div class="ntext" style="color:#3a5878;margin-top:2px;">💬 ' + t.mesaj + '</div>' : '') +
+      '<div class="ntime">' + (t.zaman||'') + '</div>';
+    liste.prepend(div);
+  }
+
+  // Aktif kullanıcıları takip et
+  const onlineRef = ref(db, 'online');
+  const myUser = localStorage.getItem('yeraltiUser') || 'admin';
+  const myOnlineRef = ref(db, 'online/' + myUser);
+  push(myOnlineRef, { ts: Date.now() });
+  onValue(onlineRef, (snapshot) => {
+    const data = snapshot.val();
+    const aktif = data ? Object.keys(data) : [];
+    document.getElementById('statOnline').textContent = aktif.length;
+  });
 `;
 document.head.appendChild(fbScript1);
 
