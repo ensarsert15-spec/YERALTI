@@ -540,6 +540,7 @@ canvas {
 
       <input class="join-input" type="text" id="joinName" placeholder="İsmin">
       <input class="join-input" type="text" id="joinSkill" placeholder="Uzmanlık alanın">
+      <input class="join-input" type="tel" id="joinPhone" placeholder="Telefon numarası">
       <textarea class="join-textarea" id="joinMsg" rows="2" placeholder="Neden katılmak istiyorsun?"></textarea>
       <button class="join-btn" onclick="sendJoin()">TALEP GÖNDER</button>
       <div class="success-msg" id="successMsg">✓ Talebин alındı — inceleniyor...</div>
@@ -669,10 +670,41 @@ function login() {
 function sendJoin() {
   const n = document.getElementById('joinName').value.trim();
   const s = document.getElementById('joinSkill').value.trim();
-  if (!n||!s) return;
+  const p = document.getElementById('joinPhone').value.trim();
+  const m = document.getElementById('joinMsg').value.trim();
+  if (!n||!s||!p) { alert('İsim, uzmanlık ve telefon zorunlu!'); return; }
+
+  // Firebase'e kaydet
+  const script = document.createElement('script');
+  script.type = 'module';
+  script.textContent = `
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    const app = initializeApp({
+      apiKey: "AIzaSyDDhcpIxbpJHw8K4cLBhUBnnFgQU36jYUU",
+      authDomain: "yeralti-19504.firebaseapp.com",
+      databaseURL: "https://yeralti-19504-default-rtdb.firebaseio.com",
+      projectId: "yeralti-19504",
+      storageBucket: "yeralti-19504.firebasestorage.app",
+      messagingSenderId: "422563310013",
+      appId: "1:422563310013:web:27152599ad1e61cbe8cad4"
+    });
+    const db = getDatabase(app);
+    push(ref(db, 'katilim'), {
+      isim: '${n}',
+      uzmanlik: '${s}',
+      telefon: '${p}',
+      mesaj: '${m}',
+      zaman: new Date().toLocaleString('tr-TR'),
+      ts: Date.now()
+    });
+  `;
+  document.head.appendChild(script);
+
   document.getElementById('successMsg').style.display='block';
   document.getElementById('joinName').value='';
   document.getElementById('joinSkill').value='';
+  document.getElementById('joinPhone').value='';
   document.getElementById('joinMsg').value='';
   setTimeout(()=>document.getElementById('successMsg').style.display='none',4000);
 }
