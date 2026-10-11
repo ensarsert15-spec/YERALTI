@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YERALTI</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&display=swap');
+
+:root {
+  --bg:     #030710;
+  --blue:   #1e90ff;
+  --blue2:  #0066cc;
+  --dark:   #080f1e;
+  --border: #0d2040;
+  --text:   #adc8e8;
+  --white:  #e8f2ff;
+  --dim:    #3a5878;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  font-family: 'Rajdhani', sans-serif;
+  min-height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Animasyonlu arka plan */
+canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+
+
+
+/* Grid */
+.grid {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  background-image:
+    linear-gradient(rgba(30,144,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30,144,255,0.04) 1px, transparent 1px);
+  background-size: 50px 50px;
+  pointer-events: none;
+}
+
+/* Sayfa düzeni */
+.page {
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 300px 1fr 300px;
+  grid-template-rows: 70px 1fr 40px;
+}
+
+/* ── ÜST BAR ── */
+.topbar {
+  grid-column: 1 / 4;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 36px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(3,7,16,0.9);
+}
+
+.topbar-logo {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--white);
+  letter-spacing: 6px;
+}
+.topbar-logo span { color: var(--blue); }
+
+.topbar-center {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 13px;
+  color: var(--blue);
+  letter-spacing: 5px;
+  opacity: 0.8;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 15px;
+  color: var(--dim);
+  letter-spacing: 1px;
+}
+.online-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #00ff88;
+  box-shadow: 0 0 8px #00ff88;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* ── SOL PANEL ── */
+.left-panel {
+  grid-column: 1;
+  grid-row: 2;
+  padding: 32px 24px;
+  border-right: 1px solid var(--border);
+  background: rgba(3,7,16,0.8);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+.section-label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 12px;
+  color: var(--blue);
+  letter-spacing: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.work-card {
+  padding: 16px;
+  border: 1px solid var(--border);
+  background: rgba(30,144,255,0.03);
+  transition: all 0.25s;
+  cursor: default;
+}
+.work-card:hover {
+  border-color: rgba(30,144,255,0.4);
+  background: rgba(30,144,255,0.06);
+  transform: translateX(3px);
+}
+
+.work-card-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+
+.work-card-desc {
+  font-size: 14px;
+  color: var(--dim);
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.work-badge {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 3px 10px;
+  border: 1px solid;
+}
+.badge-done   { color: #00ff88; border-color: #00ff88; }
+.badge-active { color: var(--blue); border-color: var(--blue); }
+.badge-plan   { color: #ffaa00; border-color: #ffaa00; }
+
+/* ── ORTA - GİRİŞ ── */
+.center-col {
+  grid-column: 2;
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.hero-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 56px;
+  font-weight: 900;
+  color: var(--white);
+  letter-spacing: 10px;
+  text-align: center;
+  text-shadow:
+    0 0 40px rgba(30,144,255,0.5),
+    0 0 80px rgba(30,144,255,0.2);
+  margin-bottom: 6px;
+}
+
+.hero-sub {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--blue);
+  letter-spacing: 6px;
+  text-align: center;
+  opacity: 0.8;
+  margin-bottom: 36px;
+}
+
+/* Giriş kutusu */
+.login-box {
+  width: 100%;
+  max-width: 380px;
+  background: rgba(4,10,24,0.95);
+  border: 1px solid rgba(30,144,255,0.25);
+  padding: 36px 32px;
+  position: relative;
+  box-shadow:
+    0 0 80px rgba(30,144,255,0.08),
+    0 20px 60px rgba(0,0,0,0.5);
+}
+
+/* Köşe çizgileri */
+.c-tl, .c-tr, .c-bl, .c-br {
+  position: absolute;
+  width: 18px; height: 18px;
+}
+.c-tl { top: -1px; left: -1px;  border-top: 2px solid var(--blue); border-left: 2px solid var(--blue); }
+.c-tr { top: -1px; right: -1px; border-top: 2px solid var(--blue); border-right: 2px solid var(--blue); }
+.c-bl { bottom: -1px; left: -1px;  border-bottom: 2px solid var(--blue); border-left: 2px solid var(--blue); }
+.c-br { bottom: -1px; right: -1px; border-bottom: 2px solid var(--blue); border-right: 2px solid var(--blue); }
+
+.box-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: 4px;
+  text-align: center;
+  margin-bottom: 4px;
+}
+.box-sub {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--dim);
+  letter-spacing: 3px;
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.field-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--blue);
+  letter-spacing: 3px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.field-input {
+  width: 100%;
+  background: rgba(30,144,255,0.05);
+  border: 1px solid rgba(30,144,255,0.2);
+  border-bottom: 2px solid var(--blue2);
+  color: var(--white);
+  padding: 14px 16px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  outline: none;
+  margin-bottom: 18px;
+  transition: all 0.2s;
+}
+.field-input:focus {
+  border-color: var(--blue);
+  background: rgba(30,144,255,0.08);
+  box-shadow: 0 0 20px rgba(30,144,255,0.12);
+}
+.field-input::placeholder { color: rgba(58,88,120,0.8); font-weight: 500; }
+
+.login-btn {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(135deg, #0050aa, var(--blue));
+  border: none;
+  color: #fff;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 6px;
+  cursor: pointer;
+  transition: all 0.25s;
+  margin-bottom: 4px;
+  position: relative;
+  overflow: hidden;
+}
+.login-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.1));
+}
+.login-btn:hover {
+  box-shadow: 0 0 40px rgba(30,144,255,0.5), 0 0 80px rgba(30,144,255,0.2);
+  letter-spacing: 8px;
+  background: linear-gradient(135deg, #0060cc, #4db0ff);
+}
+
+.error-msg {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ff4455;
+  letter-spacing: 2px;
+  padding: 10px;
+  border: 1px solid rgba(255,68,85,0.3);
+  background: rgba(255,68,85,0.05);
+  display: none;
+  margin-top: 10px;
+}
+
+/* Ayırıcı */
+.divider {
+  display: flex; align-items: center; gap: 12px;
+  margin: 22px 0 18px;
+}
+.divider::before, .divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+.divider span {
+  font-size: 12px; font-weight: 700;
+  color: var(--dim); letter-spacing: 3px;
+}
+
+.join-label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 12px; color: var(--dim);
+  letter-spacing: 3px; text-align: center;
+  margin-bottom: 14px;
+}
+
+.join-input {
+  width: 100%;
+  background: rgba(30,144,255,0.03);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 12px 14px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 16px; font-weight: 500;
+  outline: none; margin-bottom: 10px;
+  transition: border-color 0.2s;
+}
+.join-input:focus { border-color: rgba(30,144,255,0.3); }
+.join-input::placeholder { color: var(--dim); font-size: 14px; }
+
+.join-textarea {
+  width: 100%;
+  background: rgba(30,144,255,0.03);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 12px 14px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 16px; font-weight: 500;
+  outline: none; resize: none; margin-bottom: 10px;
+  transition: border-color 0.2s;
+}
+.join-textarea:focus { border-color: rgba(30,144,255,0.3); }
+.join-textarea::placeholder { color: var(--dim); font-size: 14px; }
+
+.join-btn {
+  width: 100%;
+  padding: 13px;
+  background: transparent;
+  border: 1px solid rgba(30,144,255,0.25);
+  color: var(--dim);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 4px; cursor: pointer;
+  transition: all 0.25s;
+}
+.join-btn:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: rgba(30,144,255,0.05);
+}
+
+.success-msg {
+  text-align: center; font-size: 14px; font-weight: 600;
+  color: #00ff88; letter-spacing: 2px;
+  display: none; margin-top: 10px;
+}
+
+/* ── SAĞ PANEL ── */
+.right-panel {
+  grid-column: 3;
+  grid-row: 2;
+  padding: 32px 24px;
+  border-left: 1px solid var(--border);
+  background: rgba(3,7,16,0.8);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+}
+
+.cyber-card {
+  padding: 16px;
+  border: 1px solid var(--border);
+  background: rgba(30,144,255,0.02);
+  transition: all 0.25s;
+  cursor: default;
+}
+.cyber-card:hover {
+  border-color: rgba(30,144,255,0.4);
+  background: rgba(30,144,255,0.05);
+  transform: translateX(-3px);
+}
+
+.cyber-card-top {
+  display: flex; align-items: center;
+  gap: 10px; margin-bottom: 8px;
+}
+.cyber-icon { font-size: 20px; }
+.cyber-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 17px; font-weight: 700;
+  color: var(--white); letter-spacing: 1px;
+}
+
+.cyber-desc {
+  font-size: 14px; font-weight: 500;
+  color: var(--dim); line-height: 1.5;
+}
+
+.cyber-bar {
+  margin-top: 10px;
+  height: 2px;
+  background: var(--border);
+}
+.cyber-fill {
+  height: 2px;
+  background: linear-gradient(90deg, var(--blue2), var(--blue));
+  box-shadow: 0 0 6px var(--blue);
+}
+
+/* ── ALT BAR ── */
+.bottombar {
+  grid-column: 1 / 4;
+  grid-row: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 36px;
+  border-top: 1px solid var(--border);
+  background: rgba(3,7,16,0.95);
+}
+.bottombar span {
+  font-size: 13px; font-weight: 600;
+  color: var(--dim); letter-spacing: 2px;
+}
+#clock { color: var(--blue); }
+</style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+
+
+
+<div class="grid"></div>
+
+<div class="page">
+
+  <!-- ÜST BAR -->
+  <div class="topbar">
+    <div class="topbar-logo">YER<span>ALTI</span></div>
+    <div class="topbar-center">// YERALTI'NA HOŞ GELDİNİZ</div>
+    <div class="topbar-right">
+      <div class="online-dot"></div>
+      <span>SİSTEM AKTİF</span>
+    </div>
+  </div>
+
+  <!-- SOL PANEL -->
+  <div class="left-panel">
+    <div class="section-label">// YAPTIĞIMIZ İŞLER</div>
+
+    <div class="work-card">
+      <div class="work-card-title">Platform Altyapısı</div>
+      <div class="work-card-desc">Güvenli giriş sistemi ve şifreli oturum yönetimi tamamlandı.</div>
+      <span class="work-badge badge-done">TAMAMLANDI</span>
+    </div>
+
+    <div class="work-card">
+      <div class="work-card-title">Terminal Modülü</div>
+      <div class="work-card-desc">Web tabanlı terminal; nmap, ping, whois komutları aktif.</div>
+      <span class="work-badge badge-active">AKTİF</span>
+    </div>
+
+    <div class="work-card">
+      <div class="work-card-title">Şifreli Sohbet</div>
+      <div class="work-card-desc">Takım içi güvenli mesajlaşma modülü geliştiriliyor.</div>
+      <span class="work-badge badge-active">GELİŞTİRİLİYOR</span>
+    </div>
+
+    <div class="work-card">
+      <div class="work-card-title">Pentest Araçları</div>
+      <div class="work-card-desc">Subdomain tarama, hash analiz, port tarayıcı planlandı.</div>
+      <span class="work-badge badge-plan">PLANLANDII</span>
+    </div>
+
+    <div class="work-card">
+      <div class="work-card-title">Görev Yönetimi</div>
+      <div class="work-card-desc">Takım görev takip sistemi ve proje panosu hazırlanıyor.</div>
+      <span class="work-badge badge-plan">YAKINDA</span>
+    </div>
+  </div>
+
+  <!-- ORTA - GİRİŞ -->
+  <div class="center-col">
+    <div class="hero-title">YERALTI</div>
+    <div class="hero-sub">// GİZLİ TAKIM PLATFORMU</div>
+
+    <div class="login-box">
+      <div class="c-tl"></div><div class="c-tr"></div>
+      <div class="c-bl"></div><div class="c-br"></div>
+
+      <div class="box-title">YETKİLİ GİRİŞİ</div>
+      <div class="box-sub">// KİMLİK DOĞRULAMA GEREKLİ</div>
+
+      <label class="field-label">KULLANICI ADI</label>
+      <input class="field-input" type="text" id="username" placeholder="kullanici_adi" autocomplete="off">
+
+      <label class="field-label">ŞİFRE</label>
+      <input class="field-input" type="password" id="password" placeholder="••••••••••">
+
+      <button class="login-btn" onclick="login()">GİRİŞ YAP</button>
+      <div class="error-msg" id="errorMsg">⚠ HATALI KİMLİK BİLGİSİ</div>
+
+      <div class="divider"><span>KATILIM TALEBİ</span></div>
+      <div class="join-label">// DAVET İSTE</div>
+
+      <input class="join-input" type="text" id="joinName" placeholder="İsmin">
+      <input class="join-input" type="text" id="joinSkill" placeholder="Uzmanlık alanın">
+      <textarea class="join-textarea" id="joinMsg" rows="2" placeholder="Neden katılmak istiyorsun?"></textarea>
+      <button class="join-btn" onclick="sendJoin()">TALEP GÖNDER</button>
+      <div class="success-msg" id="successMsg">✓ Talebин alındı — inceleniyor...</div>
+    </div>
+  </div>
+
+  <!-- SAĞ PANEL -->
+  <div class="right-panel">
+    <div class="section-label">// SİBER GÜVENLİK</div>
+
+    <div class="cyber-card">
+      <div class="cyber-card-top">
+        <span class="cyber-icon">🔍</span>
+        <span class="cyber-title">OSINT & RECON</span>
+      </div>
+      <div class="cyber-desc">Açık kaynak istihbaratı ile hedef hakkında bilgi toplama. DNS, subdomain, sosyal medya analizi.</div>
+      <div class="cyber-bar"><div class="cyber-fill" style="width:78%"></div></div>
+    </div>
+
+    <div class="cyber-card">
+      <div class="cyber-card-top">
+        <span class="cyber-icon">🛡️</span>
+        <span class="cyber-title">PENETRASYON TESTİ</span>
+      </div>
+      <div class="cyber-desc">Zayıf noktaları tespit etmek için yetkili saldırı simülasyonları. Metasploit, Burp Suite.</div>
+      <div class="cyber-bar"><div class="cyber-fill" style="width:62%"></div></div>
+    </div>
+
+    <div class="cyber-card">
+      <div class="cyber-card-top">
+        <span class="cyber-icon">🔐</span>
+        <span class="cyber-title">ŞİFRELEME</span>
+      </div>
+      <div class="cyber-desc">AES-256, RSA, SHA-512. Güvenli veri aktarımı ve depolama teknikleri.</div>
+      <div class="cyber-bar"><div class="cyber-fill" style="width:90%"></div></div>
+    </div>
+
+    <div class="cyber-card">
+      <div class="cyber-card-top">
+        <span class="cyber-icon">📡</span>
+        <span class="cyber-title">AĞ ANALİZİ</span>
+      </div>
+      <div class="cyber-desc">Wireshark, Nmap ile trafik izleme. Port tarama ve güvenlik açığı keşfi.</div>
+      <div class="cyber-bar"><div class="cyber-fill" style="width:55%"></div></div>
+    </div>
+
+    <div class="cyber-card">
+      <div class="cyber-card-top">
+        <span class="cyber-icon">🐛</span>
+        <span class="cyber-title">MALWARE ANALİZİ</span>
+      </div>
+      <div class="cyber-desc">Zararlı yazılım statik/dinamik analizi. Sandbox ortamında tersine mühendislik.</div>
+      <div class="cyber-bar"><div class="cyber-fill" style="width:44%"></div></div>
+    </div>
+  </div>
+
+  <!-- ALT BAR -->
+  <div class="bottombar">
+    <span id="clock">--:--:--</span>
+    <span>YERALTI // GİZLİ PLATFORM // v1.0</span>
+    <span>ŞİFRELİ BAĞLANTI AKTİF</span>
+  </div>
+
+</div>
+
+<script>
+// Partiküller
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+let W, H, pts = [];
+
+function resize() { W = canvas.width = innerWidth; H = canvas.height = innerHeight; }
+resize(); window.addEventListener('resize', resize);
+
+for (let i = 0; i < 100; i++) pts.push({
+  x: Math.random()*1920, y: Math.random()*1080,
+  vx: (Math.random()-.5)*.3, vy: (Math.random()-.5)*.3,
+  r: Math.random()*1.4+.4, o: Math.random()*.4+.1
+});
+
+function draw() {
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#030710'; ctx.fillRect(0,0,W,H);
+  for (let i=0;i<pts.length;i++) {
+    pts[i].x+=pts[i].vx; pts[i].y+=pts[i].vy;
+    if(pts[i].x<0)pts[i].x=W; if(pts[i].x>W)pts[i].x=0;
+    if(pts[i].y<0)pts[i].y=H; if(pts[i].y>H)pts[i].y=0;
+    for (let j=i+1;j<pts.length;j++) {
+      const dx=pts[i].x-pts[j].x, dy=pts[i].y-pts[j].y;
+      const d=Math.sqrt(dx*dx+dy*dy);
+      if(d<130){
+        ctx.beginPath();
+        ctx.moveTo(pts[i].x,pts[i].y);
+        ctx.lineTo(pts[j].x,pts[j].y);
+        ctx.strokeStyle=`rgba(30,144,255,${.07*(1-d/130)})`;
+        ctx.lineWidth=.6; ctx.stroke();
+      }
+    }
+    ctx.beginPath();
+    ctx.arc(pts[i].x,pts[i].y,pts[i].r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(30,144,255,${pts[i].o})`; ctx.fill();
+  }
+  requestAnimationFrame(draw);
+}
+draw();
+
+// Giriş
+const users = [
+  {username:'admin',  password:'yeraltı123'},
+  {username:'kurucu', password:'yeraltı'}
+];
+
+function login() {
+  const u = document.getElementById('username').value.trim();
+  const p = document.getElementById('password').value.trim();
+  const err = document.getElementById('errorMsg');
+  if (users.find(x=>x.username===u&&x.password===p)) {
+    localStorage.setItem('yeraltiUser', u);
+    window.location.href = 'panel.html';
+  } else {
+    err.style.display = 'block';
+    document.getElementById('password').value = '';
+    document.getElementById('password').focus();
+  }
+}
+
+function sendJoin() {
+  const n = document.getElementById('joinName').value.trim();
+  const s = document.getElementById('joinSkill').value.trim();
+  if (!n||!s) return;
+  document.getElementById('successMsg').style.display='block';
+  document.getElementById('joinName').value='';
+  document.getElementById('joinSkill').value='';
+  document.getElementById('joinMsg').value='';
+  setTimeout(()=>document.getElementById('successMsg').style.display='none',4000);
+}
+
+document.addEventListener('keypress',e=>{if(e.key==='Enter')login();});
+
+// Saat
+setInterval(()=>{
+  document.getElementById('clock').textContent=new Date().toLocaleTimeString('tr-TR');
+},1000);
+document.getElementById('clock').textContent=new Date().toLocaleTimeString('tr-TR');
+</script>
+</body>
+</html>

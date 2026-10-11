@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YERALTI // PANEL</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&display=swap');
+
+:root {
+  --bg:#030710; --dark:#060d1a; --blue:#1e90ff; --blue2:#0055bb;
+  --border:#0d2040; --border2:#1a3a60; --text:#adc8e8;
+  --white:#e8f2ff; --dim:#3a5878; --glow:rgba(30,144,255,0.4);
+  --green:#00ff88; --red:#ff4444; --yellow:#ffaa00;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);font-family:'Rajdhani',sans-serif;height:100vh;overflow:hidden;position:relative;}
+canvas{position:fixed;inset:0;z-index:0;}
+.grid{position:fixed;inset:0;z-index:1;background-image:linear-gradient(rgba(30,144,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(30,144,255,0.03) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);}
+
+/* ── UYARI ── */
+#warn{position:fixed;inset:0;z-index:9999;background:#000;display:flex;align-items:center;justify-content:center;flex-direction:column;}
+.warn-bg-text{position:absolute;font-family:'Orbitron',sans-serif;font-size:180px;font-weight:900;color:rgba(255,0,0,0.04);letter-spacing:20px;user-select:none;animation:bgRotate 20s linear infinite;}
+@keyframes bgRotate{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.warn-box{width:560px;border:1px solid rgba(255,50,50,0.5);background:rgba(4,0,0,0.97);padding:44px 40px;position:relative;box-shadow:0 0 100px rgba(255,0,0,0.15),0 0 200px rgba(255,0,0,0.05),inset 0 0 60px rgba(255,0,0,0.03);text-align:center;animation:warnAppear .5s ease;}
+@keyframes warnAppear{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.wc{position:absolute;width:22px;height:22px;}
+.wc.tl{top:-1px;left:-1px;border-top:2px solid #ff2222;border-left:2px solid #ff2222;}
+.wc.tr{top:-1px;right:-1px;border-top:2px solid #ff2222;border-right:2px solid #ff2222;}
+.wc.bl{bottom:-1px;left:-1px;border-bottom:2px solid #ff2222;border-left:2px solid #ff2222;}
+.wc.br{bottom:-1px;right:-1px;border-bottom:2px solid #ff2222;border-right:2px solid #ff2222;}
+.warn-scan{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#ff2222,transparent);animation:warnScan 2s linear infinite;}
+@keyframes warnScan{0%{top:0}100%{top:100%}}
+.warn-icon{font-size:52px;margin-bottom:14px;animation:iconPulse 1s infinite;}
+@keyframes iconPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+.warn-title{font-family:'Orbitron',sans-serif;font-size:26px;font-weight:900;color:#ff2222;letter-spacing:6px;margin-bottom:6px;text-shadow:0 0 30px rgba(255,30,30,0.8),0 0 60px rgba(255,30,30,0.4);}
+.warn-sub{font-family:'Orbitron',sans-serif;font-size:11px;color:rgba(255,80,80,0.5);letter-spacing:4px;margin-bottom:24px;}
+.warn-line{width:100%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,50,50,0.4),transparent);margin:20px 0;}
+.warn-text{font-size:17px;font-weight:600;color:var(--text);line-height:1.8;margin-bottom:6px;}
+.warn-text b{color:#ff5555;}
+.warn-notice{font-size:14px;color:#5a3030;line-height:1.8;margin-bottom:24px;padding:16px;border:1px solid rgba(255,50,50,0.2);background:rgba(255,0,0,0.04);text-align:left;}
+.warn-notice span{color:#ff7777;font-weight:700;}
+.warn-id{font-size:11px;color:#2a1a1a;letter-spacing:3px;margin-bottom:20px;font-family:'Orbitron',sans-serif;}
+.warn-btns{display:flex;gap:12px;}
+.wbtn-yes{flex:1;padding:15px;background:linear-gradient(135deg,#880000,#cc2222);border:1px solid #ff3333;color:#fff;font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;letter-spacing:4px;cursor:pointer;transition:all .25s;}
+.wbtn-yes:hover{background:linear-gradient(135deg,#aa0000,#ff2222);box-shadow:0 0 40px rgba(255,30,30,0.5);}
+.wbtn-no{flex:1;padding:15px;background:transparent;border:1px solid #1a2a3a;color:#3a5060;font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;letter-spacing:4px;cursor:pointer;transition:all .25s;}
+.wbtn-no:hover{border-color:#555;color:#888;}
+.warn-timer{font-size:12px;color:#331111;letter-spacing:2px;margin-top:14px;font-family:'Orbitron',sans-serif;}
+
+/* ── ANA LAYOUT ── */
+.page{position:relative;z-index:10;height:100vh;display:grid;grid-template-rows:62px 1fr 34px;}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-bottom:1px solid var(--border);background:rgba(3,7,16,0.97);position:relative;flex-shrink:0;}
+.topbar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--blue),transparent);opacity:.3;}
+.tbl{display:flex;align-items:center;gap:14px;}
+.logo{font-family:'Orbitron',sans-serif;font-size:19px;font-weight:900;color:var(--white);letter-spacing:5px;}
+.logo span{color:var(--blue);}
+.tbtn{display:flex;align-items:center;gap:7px;padding:7px 14px;border:1px solid var(--border2);background:rgba(30,144,255,0.04);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;letter-spacing:2px;cursor:pointer;transition:all .2s;}
+.tbtn:hover{border-color:var(--blue);color:var(--white);background:rgba(30,144,255,0.08);}
+.tb-center{position:absolute;left:50%;transform:translateX(-50%);font-family:'Orbitron',sans-serif;font-size:16px;font-weight:900;color:var(--white);letter-spacing:6px;text-shadow:0 0 20px var(--glow),0 0 40px rgba(30,144,255,.25);animation:glow 3s ease-in-out infinite;}
+@keyframes glow{0%,100%{text-shadow:0 0 20px var(--glow),0 0 40px rgba(30,144,255,.25);}50%{text-shadow:0 0 30px var(--glow),0 0 70px rgba(30,144,255,.4),0 0 100px rgba(30,144,255,.15);}}
+.tbr{display:flex;align-items:center;gap:12px;}
+.uinfo{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:600;color:var(--dim);}
+.udot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.notif-btn{position:relative;}
+.notif-badge{position:absolute;top:-5px;right:-5px;width:16px;height:16px;border-radius:50%;background:var(--blue);font-size:9px;color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-weight:700;}
+.logoutbtn{padding:7px 12px;border:1px solid var(--border);background:transparent;color:var(--dim);font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;letter-spacing:2px;cursor:pointer;transition:all .2s;}
+.logoutbtn:hover{border-color:var(--red);color:var(--red);}
+
+/* MAIN GRID */
+.main{display:grid;grid-template-columns:260px 1fr 280px;height:100%;overflow:hidden;}
+
+/* ── SOL PANEL ── */
+.lp{border-right:1px solid var(--border);background:rgba(3,7,16,.88);display:flex;flex-direction:column;overflow:hidden;}
+.sec-head{display:flex;align-items:center;gap:9px;padding:10px 16px;border-bottom:1px solid var(--border);background:rgba(30,144,255,.03);flex-shrink:0;}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--blue);box-shadow:0 0 5px var(--blue);}
+.stitle{font-family:'Orbitron',sans-serif;font-size:10px;color:var(--blue);letter-spacing:3px;}
+
+/* NAV TABS */
+.nav-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
+.ntab{flex:1;padding:8px 4px;text-align:center;font-size:11px;font-weight:700;color:var(--dim);letter-spacing:1px;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;}
+.ntab:hover{color:var(--text);}
+.ntab.active{color:var(--blue);border-bottom-color:var(--blue);background:rgba(30,144,255,.04);}
+
+.tab-content{display:none;flex:1;overflow:hidden;flex-direction:column;}
+.tab-content.active{display:flex;}
+
+/* Terminal */
+.term-body{flex:1;overflow-y:auto;padding:10px 14px;font-size:13px;line-height:1.8;}
+.tl{display:flex;gap:7px;}
+.tp{color:var(--blue);flex-shrink:0;}
+.tc{color:var(--white);}
+.to{color:#5a8aaa;padding-left:2px;}
+.to.g{color:var(--green);}
+.to.r{color:var(--red);}
+.to.y{color:var(--yellow);}
+.to.b{color:#4db8ff;}
+.to.w{color:var(--white);}
+.term-in-row{display:flex;align-items:center;gap:7px;padding:9px 14px;border-top:1px solid var(--border);flex-shrink:0;}
+.tip{color:var(--blue);font-size:13px;white-space:nowrap;flex-shrink:0;}
+.tinput{flex:1;background:transparent;border:none;color:var(--white);font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;outline:none;caret-color:var(--blue);}
+
+/* Araçlar */
+.tools-list{flex:1;overflow-y:auto;padding:10px;}
+.tool-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);background:rgba(30,144,255,.02);margin-bottom:7px;cursor:pointer;transition:all .2s;}
+.tool-item:hover{border-color:rgba(30,144,255,.4);background:rgba(30,144,255,.06);transform:translateX(3px);}
+.tool-ico{font-size:18px;flex-shrink:0;}
+.tool-name{font-size:15px;font-weight:700;color:var(--white);letter-spacing:1px;}
+.tool-desc{font-size:12px;color:var(--dim);}
+
+/* Üyeler */
+.member-list{flex:1;overflow-y:auto;}
+.mi{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid rgba(13,32,64,.6);cursor:default;}
+.mi:hover{background:rgba(30,144,255,.03);}
+.mav{width:32px;height:32px;border:1px solid var(--border2);background:rgba(30,144,255,.08);display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:12px;color:var(--blue);font-weight:700;flex-shrink:0;}
+.mname{font-size:15px;font-weight:700;color:var(--white);}
+.mrole{font-size:12px;color:var(--dim);}
+.mstat{font-size:11px;font-weight:700;letter-spacing:1px;padding:2px 7px;border:1px solid;margin-left:auto;}
+.mon{color:var(--green);border-color:var(--green);}
+.moff{color:#333;border-color:#222;}
+
+/* ── ORTA PANEL ── */
+.cp{overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:20px;}
+.csec-title{font-family:'Orbitron',sans-serif;font-size:11px;color:var(--blue);letter-spacing:4px;padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:14px;}
+
+/* Dashboard stats */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.stat-card{padding:14px;border:1px solid var(--border);background:rgba(30,144,255,.02);text-align:center;transition:all .2s;}
+.stat-card:hover{border-color:rgba(30,144,255,.3);}
+.stat-num{font-family:'Orbitron',sans-serif;font-size:26px;font-weight:900;color:var(--blue);}
+.stat-label{font-size:12px;font-weight:600;color:var(--dim);letter-spacing:2px;margin-top:4px;}
+
+/* Siber kartlar */
+.cyber-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.cc{padding:16px;border:1px solid var(--border);background:rgba(30,144,255,.02);transition:all .25s;cursor:pointer;}
+.cc:hover{border-color:rgba(30,144,255,.4);background:rgba(30,144,255,.06);transform:translateY(-2px);box-shadow:0 8px 30px rgba(30,144,255,.08);}
+.cc-top{display:flex;align-items:center;gap:9px;margin-bottom:8px;}
+.cc-ico{font-size:22px;}
+.cc-title{font-size:17px;font-weight:700;color:var(--white);letter-spacing:1px;}
+.cc-text{font-size:13px;font-weight:500;color:var(--dim);line-height:1.5;}
+.cc-bar{margin-top:10px;height:2px;background:var(--border);}
+.cc-fill{height:2px;background:linear-gradient(90deg,var(--blue2),var(--blue));box-shadow:0 0 6px var(--blue);}
+.cc-tag{display:inline-block;margin-top:8px;font-size:10px;font-weight:700;padding:2px 8px;border:1px solid rgba(30,144,255,.3);color:var(--blue);letter-spacing:2px;}
+
+/* Projeler */
+.proj-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border);background:rgba(30,144,255,.02);margin-bottom:8px;transition:all .2s;cursor:pointer;}
+.proj-item:hover{border-color:rgba(30,144,255,.3);}
+.proj-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.proj-name{font-size:16px;font-weight:700;color:var(--white);flex:1;}
+.proj-cat{font-size:11px;font-weight:700;padding:2px 8px;border:1px solid;letter-spacing:1px;}
+.cat-pentest{color:var(--red);border-color:var(--red);}
+.cat-dev{color:var(--blue);border-color:var(--blue);}
+.cat-osint{color:var(--yellow);border-color:var(--yellow);}
+.cat-net{color:var(--green);border-color:var(--green);}
+
+/* Aktivite */
+.act-item{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid rgba(13,32,64,.5);}
+.act-time{font-size:12px;color:var(--dim);flex-shrink:0;width:50px;}
+.act-text{font-size:14px;font-weight:500;color:var(--text);}
+.act-user{color:var(--blue);font-weight:700;}
+
+/* ── SAĞ PANEL ── */
+.rp{border-left:1px solid var(--border);background:rgba(3,7,16,.88);display:flex;flex-direction:column;overflow:hidden;}
+.rp-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
+.rtab{flex:1;padding:8px 4px;text-align:center;font-size:11px;font-weight:700;color:var(--dim);letter-spacing:1px;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;}
+.rtab:hover{color:var(--text);}
+.rtab.active{color:var(--blue);border-bottom-color:var(--blue);background:rgba(30,144,255,.04);}
+.rtab-content{display:none;flex:1;overflow:hidden;flex-direction:column;}
+.rtab-content.active{display:flex;}
+
+/* Sohbet */
+.chat-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:5px;}
+.csys{text-align:center;font-size:11px;font-weight:600;color:var(--dim);letter-spacing:2px;padding:5px 10px;border:1px solid var(--border);background:rgba(30,144,255,.02);margin:5px 0;}
+.msg{display:flex;flex-direction:column;max-width:88%;margin-bottom:5px;}
+.msg.own{align-self:flex-end;align-items:flex-end;}
+.msg.other{align-self:flex-start;}
+.mmeta{font-size:11px;color:var(--dim);letter-spacing:1px;margin-bottom:3px;display:flex;gap:7px;}
+.mmeta .n{color:var(--blue);font-weight:700;}
+.msg.own .mmeta .n{color:#5a8aaa;}
+.mbub{padding:9px 12px;font-size:14px;font-weight:500;line-height:1.5;border:1px solid;}
+.msg.other .mbub{background:rgba(30,144,255,.05);border-color:var(--border2);color:#5ab4ff;border-left:2px solid var(--blue);}
+.msg.own .mbub{background:rgba(30,144,255,.08);border-color:rgba(30,144,255,.2);color:#8ecfff;}
+.chat-in-area{border-top:1px solid var(--border);padding:10px 12px;display:flex;gap:8px;background:rgba(3,7,16,.9);flex-shrink:0;}
+.cin{flex:1;background:rgba(30,144,255,.04);border:1px solid var(--border2);color:var(--white);padding:9px 12px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:500;outline:none;transition:border-color .2s;}
+.cin:focus{border-color:var(--blue);}
+.cin::placeholder{color:var(--dim);}
+.csend{padding:9px 14px;background:linear-gradient(135deg,var(--blue2),var(--blue));border:none;color:#fff;font-family:'Orbitron',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s;}
+.csend:hover{box-shadow:0 0 20px rgba(30,144,255,.4);}
+
+/* Bildirimler */
+.notif-list{flex:1;overflow-y:auto;padding:12px;}
+.notif-item{padding:12px;border:1px solid var(--border);background:rgba(30,144,255,.02);margin-bottom:8px;transition:all .2s;}
+.notif-item.unread{border-color:rgba(30,144,255,.3);background:rgba(30,144,255,.05);}
+.ntype{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--blue);margin-bottom:4px;}
+.ntext{font-size:14px;font-weight:500;color:var(--text);}
+.ntime{font-size:11px;color:var(--dim);margin-top:4px;}
+
+/* Şifre Kasası */
+.vault-list{flex:1;overflow-y:auto;padding:12px;}
+.vault-add{padding:10px 12px;margin-bottom:10px;}
+.vault-input{width:100%;background:rgba(30,144,255,.04);border:1px solid var(--border2);color:var(--white);padding:9px 12px;font-family:'Rajdhani',sans-serif;font-size:14px;outline:none;margin-bottom:8px;}
+.vault-input::placeholder{color:var(--dim);}
+.vault-input:focus{border-color:var(--blue);}
+.vadd-btn{width:100%;padding:10px;background:linear-gradient(135deg,var(--blue2),var(--blue));border:none;color:#fff;font-family:'Orbitron',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;cursor:pointer;transition:all .2s;}
+.vadd-btn:hover{box-shadow:0 0 20px rgba(30,144,255,.3);}
+.vault-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);background:rgba(30,144,255,.02);margin-bottom:7px;}
+.vi-name{font-size:15px;font-weight:700;color:var(--white);flex:1;}
+.vi-pass{font-size:13px;color:var(--dim);font-family:'Rajdhani',sans-serif;}
+.vi-copy{padding:4px 10px;border:1px solid var(--border2);background:transparent;color:var(--dim);font-size:11px;font-family:'Orbitron',sans-serif;cursor:pointer;transition:all .2s;letter-spacing:1px;}
+.vi-copy:hover{border-color:var(--blue);color:var(--blue);}
+
+/* BOTTOMBAR */
+.bottombar{display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-top:1px solid var(--border);background:rgba(3,7,16,.97);flex-shrink:0;}
+.bottombar span{font-size:12px;font-weight:600;color:var(--dim);letter-spacing:2px;}
+#clk{color:var(--blue);}
+
+/* ── MODALLER ── */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(2,5,14,.93);align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.mbox{width:500px;background:rgba(4,10,24,.99);border:1px solid rgba(30,144,255,.3);padding:34px 30px;position:relative;box-shadow:0 0 80px rgba(30,144,255,.1);animation:mAppear .3s ease;}
+@keyframes mAppear{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+.mc{position:absolute;width:14px;height:14px;}
+.mc.tl{top:-1px;left:-1px;border-top:2px solid var(--blue);border-left:2px solid var(--blue);}
+.mc.tr{top:-1px;right:-1px;border-top:2px solid var(--blue);border-right:2px solid var(--blue);}
+.mc.bl{bottom:-1px;left:-1px;border-bottom:2px solid var(--blue);border-left:2px solid var(--blue);}
+.mc.br{bottom:-1px;right:-1px;border-bottom:2px solid var(--blue);border-right:2px solid var(--blue);}
+.mtitle{font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:var(--white);letter-spacing:4px;margin-bottom:4px;}
+.msub{font-size:13px;font-weight:500;color:var(--dim);letter-spacing:3px;margin-bottom:22px;}
+.mfield{margin-bottom:15px;}
+.mlabel{display:block;font-size:11px;font-weight:700;color:var(--blue);letter-spacing:3px;margin-bottom:7px;}
+.minput,.msel,.mtarea{width:100%;background:rgba(30,144,255,.04);border:1px solid rgba(30,144,255,.2);border-bottom:2px solid var(--blue2);color:var(--white);padding:11px 13px;font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:500;outline:none;transition:all .2s;}
+.minput:focus,.msel:focus,.mtarea:focus{border-color:var(--blue);background:rgba(30,144,255,.07);}
+.minput::placeholder,.mtarea::placeholder{color:var(--dim);}
+.mtarea{resize:none;}
+.msel{cursor:pointer;}
+.msel option{background:#030710;color:var(--white);}
+.mbtns{display:flex;gap:10px;margin-top:18px;}
+.mok{flex:1;padding:13px;background:linear-gradient(135deg,var(--blue2),var(--blue));border:none;color:#fff;font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;letter-spacing:4px;cursor:pointer;transition:all .25s;}
+.mok:hover{box-shadow:0 0 30px rgba(30,144,255,.4);}
+.mcancel{padding:13px 18px;background:transparent;border:1px solid var(--border2);color:var(--dim);font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;letter-spacing:3px;cursor:pointer;transition:all .2s;}
+.mcancel:hover{border-color:var(--red);color:var(--red);}
+
+/* Siber Detay Modal */
+.cyber-detail{max-width:600px;width:90%;}
+.cdr-content{font-size:15px;font-weight:500;color:var(--text);line-height:1.9;margin-top:10px;}
+.cdr-content h3{font-family:'Orbitron',sans-serif;font-size:13px;color:var(--blue);letter-spacing:3px;margin:16px 0 8px;}
+.cdr-content ul{list-style:none;padding:0;}
+.cdr-content ul li{padding:4px 0;color:var(--text);}
+.cdr-content ul li::before{content:'▸ ';color:var(--blue);}
+.cdr-content .highlight{color:#4db8ff;font-weight:700;}
+
+/* Araç sonuç kutusu */
+.tool-result{background:rgba(30,144,255,.04);border:1px solid var(--border);padding:14px;margin-top:14px;font-size:14px;font-weight:500;color:var(--text);line-height:1.8;max-height:300px;overflow-y:auto;display:none;}
+.tool-result.show{display:block;}
+.tr-label{font-family:'Orbitron',sans-serif;font-size:10px;color:var(--blue);letter-spacing:3px;margin-bottom:8px;}
+.tr-line{padding:2px 0;border-bottom:1px solid rgba(13,32,64,.4);}
+.tr-key{color:var(--dim);}
+.tr-val{color:var(--white);font-weight:700;}
+.tr-val.ok{color:var(--green);}
+.tr-val.warn{color:var(--yellow);}
+.tr-loading{color:var(--blue);animation:loadAnim 1s infinite;}
+@keyframes loadAnim{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* Toast */
+.toast{position:fixed;bottom:50px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(30,144,255,.15);border:1px solid var(--blue);color:var(--white);padding:10px 22px;font-family:'Orbitron',sans-serif;font-size:12px;letter-spacing:2px;z-index:9000;opacity:0;transition:all .3s;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="grid"></div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ── UYARI ── -->
+<div id="warn">
+  <div class="warn-bg-text">YERALTI</div>
+  <div class="warn-box">
+    <div class="wc tl"></div><div class="wc tr"></div>
+    <div class="wc bl"></div><div class="wc br"></div>
+    <div class="warn-scan"></div>
+    <div class="warn-icon">⚠️</div>
+    <div class="warn-title">SİSTEM UYARISI</div>
+    <div class="warn-sub">// GİZLİ ALTYAPI ERİŞİMİ TESPİT EDİLDİ</div>
+    <div class="warn-line"></div>
+    <div class="warn-text">Bu platforma erişim için <b>18 yaşından büyük</b> olmanız zorunludur.</div>
+    <div class="warn-notice">
+      <span>⚠ DİKKAT:</span> Bu sistem içinde gerçekleştirilen tüm işlemler, yazışmalar, komut
+      geçmişleri ve dosya transferleri <span>şifreli sunuculara kayıt edilmektedir.</span>
+      Yetkili birimler tarafından <span>7 gün 24 saat aktif izleme</span> uygulanmaktadır.
+      Sistemi kötüye kullanmak yasal yaptırımlara tabi tutulacaktır.
+    </div>
+    <div class="warn-id" id="warnId">SES-ID: OLUŞTURULUYOR...</div>
+    <div class="warn-btns">
+      <button class="wbtn-yes" onclick="acceptWarn()">✓ KABUL EDİYORUM</button>
+      <button class="wbtn-no" onclick="window.location.href='index.html'">✕ REDDEDİYORUM</button>
+    </div>
+    <div class="warn-timer" id="warnTimer">Otomatik yönlendirme: 60 saniye</div>
+  </div>
+</div>
+
+<!-- ── PROJE MODAL ── -->
+<div class="modal-overlay" id="projModal">
+  <div class="mbox">
+    <div class="mc tl"></div><div class="mc tr"></div><div class="mc bl"></div><div class="mc br"></div>
+    <div class="mtitle">YENİ PROJE</div>
+    <div class="msub">// PROJE OLUŞTUR</div>
+    <div class="mfield"><label class="mlabel">PROJE ADI</label><input class="minput" id="pName" placeholder="proje_adi" autocomplete="off"></div>
+    <div class="mfield"><label class="mlabel">AÇIKLAMA</label><textarea class="mtarea" id="pDesc" rows="3" placeholder="Proje hakkında..."></textarea></div>
+    <div class="mfield"><label class="mlabel">KATEGORİ</label>
+      <select class="msel" id="pCat">
+        <option value="">Seç...</option>
+        <option>Pentest</option><option>OSINT</option>
+        <option>Geliştirme</option><option>Araştırma</option><option>Ağ Analizi</option>
+      </select>
+    </div>
+    <div class="mbtns">
+      <button class="mok" onclick="createProj()">OLUŞTUR</button>
+      <button class="mcancel" onclick="closeModal('projModal')">İPTAL</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── SİBER DETAY MODAL ── -->
+<div class="modal-overlay" id="cyberModal">
+  <div class="mbox cyber-detail">
+    <div class="mc tl"></div><div class="mc tr"></div><div class="mc bl"></div><div class="mc br"></div>
+    <div class="mtitle" id="cmTitle"></div>
+    <div class="msub" id="cmSub"></div>
+    <div class="cdr-content" id="cmContent"></div>
+    <div class="mbtns"><button class="mcancel" onclick="closeModal('cyberModal')" style="width:100%">KAPAT</button></div>
+  </div>
+</div>
+
+<!-- ── ARAÇ MODAL ── -->
+<div class="modal-overlay" id="toolModal">
+  <div class="mbox">
+    <div class="mc tl"></div><div class="mc tr"></div><div class="mc bl"></div><div class="mc br"></div>
+    <div class="mtitle" id="tmTitle">ARAÇ</div>
+    <div class="msub" id="tmSub">// SORGULAMA</div>
+    <div class="mfield"><label class="mlabel" id="tmLabel">GİRİŞ</label><input class="minput" id="tmInput" placeholder="" autocomplete="off"></div>
+    <div class="mbtns">
+      <button class="mok" onclick="runToolQuery()">ÇALIŞTIR</button>
+      <button class="mcancel" onclick="closeModal('toolModal')">KAPAT</button>
+    </div>
+    <div class="tool-result" id="toolResult">
+      <div class="tr-label" id="trLabel">SONUÇ</div>
+      <div id="trContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── ANA SAYFA ── -->
+<div class="page">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="tbl">
+      <div class="logo">YER<span>ALTI</span></div>
+      <button class="tbtn" onclick="openModal('projModal')">＋ YENİ PROJE</button>
+    </div>
+    <div class="tb-center">YERALTI'NA HOŞ GELDİNİZ</div>
+    <div class="tbr">
+      <div class="uinfo"><div class="udot"></div><span id="topUser">ADMIN</span></div>
+      <button class="tbtn notif-btn" onclick="switchRTab('notif')">🔔 BİLDİRİM<span class="notif-badge" id="nbadge">3</span></button>
+      <button class="tbtn" onclick="switchRTab('chat')">💬 SOHBET</button>
+      <button class="logoutbtn" onclick="window.location.href='index.html'">ÇIKIŞ</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- SOL -->
+    <div class="lp">
+      <div class="nav-tabs">
+        <div class="ntab active" onclick="switchLTab('terminal',this)">TERMİNAL</div>
+        <div class="ntab" onclick="switchLTab('tools',this)">ARAÇLAR</div>
+        <div class="ntab" onclick="switchLTab('members',this)">ÜYELER</div>
+        <div class="ntab" onclick="switchLTab('projects',this)">PROJELER</div>
+      </div>
+
+      <!-- Terminal -->
+      <div class="tab-content active" id="lt-terminal">
+        <div class="term-body" id="tb">
+          <div class="tl"><span class="to g">Yeralti Terminal v2.0 — Hazir.</span></div>
+          <div class="tl"><span class="to" style="color:#1a3a50">Komutlar: help | ip | hash | base64 | pass | whois | nmap | ping | clear</span></div>
+          <div style="margin-top:6px"></div>
+        </div>
+        <div class="term-in-row">
+          <span class="tip">yeralti~$</span>
+          <input class="tinput" id="ti" type="text" autocomplete="off" spellcheck="false" placeholder="komut girin...">
+        </div>
+      </div>
+
+      <!-- Araçlar -->
+      <div class="tab-content" id="lt-tools">
+        <div class="tools-list">
+          <div class="tool-item" onclick="openTool('ip')"><span class="tool-ico">🌐</span><div><div class="tool-name">IP SORGULA</div><div class="tool-desc">Gerçek IP konum & ISP bilgisi</div></div></div>
+          <div class="tool-item" onclick="openTool('hash')"><span class="tool-ico">🔐</span><div><div class="tool-name">HASH ÜRETİCİ</div><div class="tool-desc">MD5 / SHA-256 hesaplama</div></div></div>
+          <div class="tool-item" onclick="openTool('base64enc')"><span class="tool-ico">📋</span><div><div class="tool-name">BASE64 ENCODE</div><div class="tool-desc">Metni Base64'e çevir</div></div></div>
+          <div class="tool-item" onclick="openTool('base64dec')"><span class="tool-ico">📤</span><div><div class="tool-name">BASE64 DECODE</div><div class="tool-desc">Base64'ten metne çevir</div></div></div>
+          <div class="tool-item" onclick="openTool('pass')"><span class="tool-ico">🔑</span><div><div class="tool-name">ŞİFRE ÜRETİCİ</div><div class="tool-desc">Güçlü rastgele şifre üret</div></div></div>
+          <div class="tool-item" onclick="openTool('whois')"><span class="tool-ico">🔎</span><div><div class="tool-name">WHOIS SORGULA</div><div class="tool-desc">Domain bilgisi çek</div></div></div>
+        </div>
+      </div>
+
+      <!-- Üyeler -->
+      <div class="tab-content" id="lt-members">
+        <div class="member-list">
+          <div class="mi"><div class="mav">A</div><div><div class="mname">admin</div><div class="mrole">KURUCU</div></div><span class="mstat mon">ONLİNE</span></div>
+          <div class="mi"><div class="mav">K</div><div><div class="mname">kurucu</div><div class="mrole">KUİLDER</div></div><span class="mstat mon">ONLİNE</span></div>
+          <div class="mi"><div class="mav">G</div><div><div class="mname">ghost_01</div><div class="mrole">ANALİST</div></div><span class="mstat moff">OFFLİNE</span></div>
+          <div class="mi"><div class="mav">X</div><div><div class="mname">xshadow</div><div class="mrole">PENTEST</div></div><span class="mstat moff">OFFLİNE</span></div>
+        </div>
+      </div>
+
+      <!-- Projeler -->
+      <div class="tab-content" id="lt-projects">
+        <div style="padding:10px 12px;border-bottom:1px solid var(--border);flex-shrink:0;">
+          <button class="vadd-btn" onclick="openModal('projModal')" style="font-size:11px;padding:9px;">＋ YENİ PROJE OLUŞTUR</button>
+        </div>
+        <div class="member-list" id="sidebarProjList">
+          <div class="mi" style="flex-direction:column;align-items:flex-start;gap:5px;">
+            <div style="display:flex;align-items:center;gap:8px;width:100%;">
+              <div style="width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0;"></div>
+              <div class="mname" style="flex:1;">Panel Altyapısı</div>
+              <span class="mstat" style="color:var(--blue);border-color:var(--blue);font-size:10px;">DEV</span>
+            </div>
+            <div style="font-size:12px;color:var(--dim);padding-left:16px;">Geliştirme aşamasında</div>
+          </div>
+          <div class="mi" style="flex-direction:column;align-items:flex-start;gap:5px;">
+            <div style="display:flex;align-items:center;gap:8px;width:100%;">
+              <div style="width:8px;height:8px;border-radius:50%;background:var(--yellow);flex-shrink:0;"></div>
+              <div class="mname" style="flex:1;">Subdomain Tarayıcı</div>
+              <span class="mstat" style="color:var(--red);border-color:var(--red);font-size:10px;">PENTEST</span>
+            </div>
+            <div style="font-size:12px;color:var(--dim);padding-left:16px;">Araştırma aşamasında</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORTA -->
+    <div class="cp">
+
+      <!-- Dashboard -->
+      <div>
+        <div class="csec-title">// DASHBOARD</div>
+        <div class="stats-row">
+          <div class="stat-card"><div class="stat-num" id="statProj">0</div><div class="stat-label">PROJE</div></div>
+          <div class="stat-card"><div class="stat-num">4</div><div class="stat-label">ÜYELER</div></div>
+          <div class="stat-card"><div class="stat-num" id="statOnline">2</div><div class="stat-label">ONLİNE</div></div>
+          <div class="stat-card"><div class="stat-num" id="statTools">6</div><div class="stat-label">ARAÇLAR</div></div>
+        </div>
+      </div>
+
+      <!-- Projeler -->
+      <div>
+        <div class="csec-title">// AKTİF PROJELER</div>
+        <div id="projList">
+          <div class="proj-item"><div class="proj-dot" style="background:var(--red)"></div><div class="proj-name">Panel Altyapısı</div><span class="proj-cat cat-dev">GELİŞTİRME</span></div>
+          <div class="proj-item"><div class="proj-dot" style="background:var(--yellow)"></div><div class="proj-name">Subdomain Tarayıcı</div><span class="proj-cat cat-pentest">PENTEST</span></div>
+        </div>
+      </div>
+
+      <!-- Siber Güvenlik Kartları -->
+      <div>
+        <div class="csec-title">// SİBER GÜVENLİK — DETAY İÇİN TIKLA</div>
+        <div class="cyber-grid">
+          <div class="cc" onclick="showCyber('osint')"><div class="cc-top"><span class="cc-ico">🔍</span><span class="cc-title">OSINT & RECON</span></div><div class="cc-text">Açık kaynak istihbaratı toplama teknikleri.</div><div class="cc-bar"><div class="cc-fill" style="width:82%"></div></div><span class="cc-tag">TIKLA — DETAY</span></div>
+          <div class="cc" onclick="showCyber('pentest')"><div class="cc-top"><span class="cc-ico">🛡️</span><span class="cc-title">PENETRASYON TESTİ</span></div><div class="cc-text">Yetkili saldırı simülasyonları ve zafiyet tespiti.</div><div class="cc-bar"><div class="cc-fill" style="width:68%"></div></div><span class="cc-tag">TIKLA — DETAY</span></div>
+          <div class="cc" onclick="showCyber('kripto')"><div class="cc-top"><span class="cc-ico">🔐</span><span class="cc-title">KRİPTOGRAFİ</span></div><div class="cc-text">Şifreleme algoritmaları ve güvenli iletişim.</div><div class="cc-bar"><div class="cc-fill" style="width:91%"></div></div><span class="cc-tag">TIKLA — DETAY</span></div>
+          <div class="cc" onclick="showCyber('ag')"><div class="cc-top"><span class="cc-ico">📡</span><span class="cc-title">AĞ GÜVENLİĞİ</span></div><div class="cc-text">Trafik analizi, port tarama ve IDS sistemleri.</div><div class="cc-bar"><div class="cc-fill" style="width:59%"></div></div><span class="cc-tag">TIKLA — DETAY</span></div>
+          <div class="cc" onclick="showCyber('malware')"><div class="cc-top"><span class="cc-ico">🐛</span><span class="cc-title">MALWARE ANALİZİ</span></div><div class="cc-text">Zararlı yazılım tespiti ve tersine mühendislik.</div><div class="cc-bar"><div class="cc-fill" style="width:44%"></div></div><span class="cc-tag">TIKLA — DETAY</span></div>
+          <div class="cc" onclick="showCyber('web')"><div class="cc-top"><span class="cc-ico">💻</span><span class="cc-title">WEB GÜVENLİĞİ</span></div><div class="cc-text">SQL Injection, XSS, CSRF ve OWASP Top 10.</div><div class="cc-bar"><div class="cc-fill" style="width:75%"></div></div><span class="cc-tag">TIKLA — DETAY</span></div>
+        </div>
+      </div>
+
+      <!-- Aktivite -->
+      <div>
+        <div class="csec-title">// SON AKTİVİTE</div>
+        <div id="actList">
+          <div class="act-item"><div class="act-time">az önce</div><div class="act-text"><span class="act-user">admin</span> panele giriş yaptı</div></div>
+          <div class="act-item"><div class="act-time">5 dk</div><div class="act-text"><span class="act-user">kurucu</span> yeni proje oluşturdu</div></div>
+          <div class="act-item"><div class="act-time">12 dk</div><div class="act-text"><span class="act-user">ghost_01</span> bağlantıyı kesti</div></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SAĞ -->
+    <div class="rp">
+      <div class="rp-tabs">
+        <div class="rtab active" id="rt-chat" onclick="switchRTab('chat')">SOHBET</div>
+        <div class="rtab" id="rt-notif" onclick="switchRTab('notif')">BİLDİRİM</div>
+        <div class="rtab" id="rt-vault" onclick="switchRTab('vault')">KASA</div>
+      </div>
+
+      <!-- SOHBET -->
+      <div class="rtab-content active" id="rp-chat">
+        <div class="chat-msgs" id="chatMsgs">
+          <div class="csys">// ŞİFRELİ KANAL AKTİF</div>
+          <div class="msg other"><div class="mmeta"><span class="n">ghost_01</span><span>23:14</span></div><div class="mbub">Panel hazır mı?</div></div>
+          <div class="msg own"><div class="mmeta"><span class="n">sen</span><span>23:15</span></div><div class="mbub">Hemen hazırlıyoruz!</div></div>
+          <div class="msg other"><div class="mmeta"><span class="n">ghost_01</span><span>23:16</span></div><div class="mbub">Araçlar gerçekten çalışıyor mu?</div></div>
+          <div class="msg own"><div class="mmeta"><span class="n">sen</span><span>23:16</span></div><div class="mbub">Evet, IP sorgusu, hash, base64 hepsi gerçek! 🔥</div></div>
+        </div>
+        <div class="chat-in-area">
+          <input class="cin" id="cin" type="text" placeholder="mesaj yaz..." autocomplete="off">
+          <button class="csend" onclick="sendMsg()">▶</button>
+        </div>
+      </div>
+
+      <!-- BİLDİRİMLER -->
+      <div class="rtab-content" id="rp-notif">
+        <div class="notif-list">
+          <div class="notif-item unread"><div class="ntype">YENİ ÜYELER</div><div class="ntext">xshadow takıma katıldı</div><div class="ntime">5 dakika önce</div></div>
+          <div class="notif-item unread"><div class="ntype">PROJE</div><div class="ntext">Subdomain Tarayıcı güncellendi</div><div class="ntime">12 dakika önce</div></div>
+          <div class="notif-item unread"><div class="ntype">GÜVENLİK</div><div class="ntext">Bilinmeyen IP bağlantı denemesi</div><div class="ntime">1 saat önce</div></div>
+          <div class="notif-item"><div class="ntype">GÖREV</div><div class="ntext">Panel altyapısı tamamlandı</div><div class="ntime">2 saat önce</div></div>
+          <div class="notif-item"><div class="ntype">SİSTEM</div><div class="ntext">v2.0 güncellemesi yüklendi</div><div class="ntime">dün</div></div>
+        </div>
+      </div>
+
+      <!-- ŞİFRE KASASI -->
+      <div class="rtab-content" id="rp-vault">
+        <div class="vault-list">
+          <div class="vault-add">
+            <input class="vault-input" id="vName" placeholder="Servis adı (örn: GitHub)">
+            <input class="vault-input" id="vPass" placeholder="Şifre" type="password">
+            <button class="vadd-btn" onclick="addVault()">+ KASAYA EKLE</button>
+          </div>
+          <div id="vaultItems"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="bottombar">
+    <span id="clk">--:--:--</span>
+    <span>YERALTI // v2.0 // GİZLİ PLATFORM</span>
+    <span id="myIp">IP: yükleniyor...</span>
+  </div>
+</div>
+
+<script>
+// ── PARTİKÜLLER ──
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+let W,H,ps=[];
+function rsz(){W=cv.width=innerWidth;H=cv.height=innerHeight;}
+rsz();window.addEventListener('resize',rsz);
+for(let i=0;i<80;i++)ps.push({x:Math.random()*1920,y:Math.random()*1080,vx:(Math.random()-.5)*.2,vy:(Math.random()-.5)*.2,r:Math.random()*1.2+.3,o:Math.random()*.3+.07});
+function anim(){
+  cx.clearRect(0,0,W,H);cx.fillStyle='#030710';cx.fillRect(0,0,W,H);
+  for(let i=0;i<ps.length;i++){
+    ps[i].x+=ps[i].vx;ps[i].y+=ps[i].vy;
+    if(ps[i].x<0)ps[i].x=W;if(ps[i].x>W)ps[i].x=0;
+    if(ps[i].y<0)ps[i].y=H;if(ps[i].y>H)ps[i].y=0;
+    for(let j=i+1;j<ps.length;j++){const dx=ps[i].x-ps[j].x,dy=ps[i].y-ps[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<110){cx.beginPath();cx.moveTo(ps[i].x,ps[i].y);cx.lineTo(ps[j].x,ps[j].y);cx.strokeStyle=`rgba(30,144,255,${.05*(1-d/110)})`;cx.lineWidth=.5;cx.stroke();}}
+    cx.beginPath();cx.arc(ps[i].x,ps[i].y,ps[i].r,0,Math.PI*2);cx.fillStyle=`rgba(30,144,255,${ps[i].o})`;cx.fill();
+  }
+  requestAnimationFrame(anim);
+}
+anim();
+
+// ── KULLANICI ──
+const usr=localStorage.getItem('yeraltiUser')||'admin';
+document.getElementById('topUser').textContent=usr.toUpperCase();
+
+// ── UYARI ──
+document.getElementById('warnId').textContent='SES-ID: YR-'+Math.random().toString(36).substr(2,8).toUpperCase()+'-'+Date.now().toString(36).toUpperCase();
+let warnSec=60;
+const wt=setInterval(()=>{
+  warnSec--;
+  document.getElementById('warnTimer').textContent=`Otomatik yönlendirme: ${warnSec} saniye`;
+  if(warnSec<=0){clearInterval(wt);window.location.href='index.html';}
+},1000);
+function acceptWarn(){clearInterval(wt);document.getElementById('warn').style.display='none';loadMyIp();}
+
+// ── TOAST ──
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+
+// ── MODAL ──
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');document.getElementById('toolResult').classList.remove('show');}
+
+// ── TAB GEÇİŞ ──
+function switchLTab(name,el){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('lt-'+name).classList.add('active');
+  el.classList.add('active');
+  if(name==='terminal')setTimeout(()=>document.getElementById('ti').focus(),50);
+}
+function switchRTab(name){
+  document.querySelectorAll('.rtab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.rtab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('rp-'+name).classList.add('active');
+  document.getElementById('rt-'+name).classList.add('active');
+  if(name==='notif'){document.getElementById('nbadge').style.display='none';}
+  if(name==='chat')scrollChat();
+}
+
+// ── TERMİNAL ──
+const tb2=document.getElementById('tb');
+let hist=[],hi=-1;
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function tPrint(lines){lines.forEach(l=>{const d=document.createElement('div');d.className='tl';const s=document.createElement('span');s.className=`to${l.c?' '+l.c:''}`;s.textContent=l.v;d.appendChild(s);tb2.appendChild(d);});tb2.scrollTop=tb2.scrollHeight;}
+function tCmd(raw){
+  if(!raw.trim())return;
+  const p=raw.trim().split(' '),cmd=p[0].toLowerCase(),arg=p.slice(1).join(' ');
+  const cl=document.createElement('div');cl.className='tl';cl.innerHTML=`<span class="tp">yeralti~$</span><span class="tc"> ${esc(raw)}</span>`;tb2.appendChild(cl);
+  if(cmd==='help'){tPrint([{c:'b',v:'━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'},{c:'b',v:'  YERALTI TERMİNAL KOMUTLARI'},{c:'b',v:'━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'},{c:'',v:''},{c:'g',v:'  ip <adres>        → IP konum ve bilgi sorgula'},{c:'g',v:'  hash <metin>      → MD5 + SHA-256 üret'},{c:'g',v:'  base64 enc <m>    → Base64 encode'},{c:'g',v:'  base64 dec <m>    → Base64 decode'},{c:'g',v:'  pass [uzunluk]    → Güçlü şifre üret'},{c:'g',v:'  whoami            → Kullanıcı bilgisi'},{c:'g',v:'  team              → Takım listesi'},{c:'g',v:'  ls                → Dosyalar'},{c:'g',v:'  ping <host>       → Ping simülasyonu'},{c:'g',v:'  nmap <host>       → Port tarama sim.'},{c:'g',v:'  clear             → Temizle'},{c:'',v:''}]);}
+  else if(cmd==='ip'){const h=arg||'';tPrint([{c:'y',v:`IP sorgulanıyor: ${h||'kendi IP\'n'}...`}]);fetchIp(arg);}
+  else if(cmd==='hash'){if(!arg){tPrint([{c:'r',v:'kullanım: hash <metin>'}]);}else{const md5r=md5(arg);const sha=sha256(arg);tPrint([{c:'b',v:`Metin  : ${arg}`},{c:'g',v:`MD5    : ${md5r}`},{c:'g',v:`SHA-256: ${sha}`}]);}}
+  else if(cmd==='base64'){const sub=p[1]?p[1].toLowerCase():'';const val=p.slice(2).join(' ');if(sub==='enc'&&val){tPrint([{c:'b',v:`Girdi  : ${val}`},{c:'g',v:`Encode : ${btoa(unescape(encodeURIComponent(val)))}`}]);}else if(sub==='dec'&&val){try{tPrint([{c:'b',v:`Girdi  : ${val}`},{c:'g',v:`Decode : ${decodeURIComponent(escape(atob(val)))}`}]);}catch{tPrint([{c:'r',v:'Geçersiz Base64 girdisi'}]);}}else{tPrint([{c:'r',v:'kullanım: base64 enc <metin> veya base64 dec <metin>'}]);}}
+  else if(cmd==='pass'){const len=parseInt(arg)||16;tPrint([{c:'g',v:`Şifre: ${genPass(len)}`},{c:'',v:`Uzunluk: ${len} karakter`}]);}
+  else if(cmd==='whoami'){tPrint([{c:'b',v:`kullanici : ${usr}`},{c:'b',v:`rol       : KURUCU`},{c:'g',v:`durum     : AKTİF`},{c:'b',v:`sistem    : YERALTI v2.0`}]);}
+  else if(cmd==='team'){tPrint([{c:'g',v:'● admin    — KURUCU  — ONLİNE'},{c:'g',v:'● kurucu   — KUİLDER — ONLİNE'},{c:'',v:'○ ghost_01 — ANALİST — OFFLİNE'},{c:'',v:'○ xshadow  — PENTEST — OFFLİNE'}]);}
+  else if(cmd==='ls'){tPrint([{c:'b',v:'drwxr-xr-x  projeler/'},{c:'b',v:'drwxr-xr-x  gorevler/'},{c:'g',v:'-rw-r--r--  readme.txt'},{c:'y',v:'-rwx------  yeralti.sh'}]);}
+  else if(cmd==='ping'){const h=arg||'google.com';tPrint([{c:'y',v:`PING ${h}...`},{c:'g',v:`64 bytes ttl=64 time=${10+Math.floor(Math.random()*20)}ms`},{c:'g',v:`64 bytes ttl=64 time=${10+Math.floor(Math.random()*20)}ms`},{c:'g',v:`64 bytes ttl=64 time=${10+Math.floor(Math.random()*20)}ms`},{c:'b',v:`3 paket gönderildi, 3 alındı, %0 kayıp`}]);}
+  else if(cmd==='nmap'){const h=arg||'127.0.0.1';tPrint([{c:'y',v:`Nmap tarama: ${h}`},{c:'g',v:'22/tcp   açık  ssh'},{c:'g',v:'80/tcp   açık  http'},{c:'g',v:'443/tcp  açık  https'},{c:'r',v:'3306/tcp açık  mysql'},{c:'b',v:`4 port tarandı`}]);}
+  else if(cmd==='clear'){tb2.innerHTML='';}
+  else{tPrint([{c:'r',v:`bilinmeyen komut: ${cmd} — 'help' yaz`}]);}
+}
+
+document.getElementById('ti').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){const v=document.getElementById('ti').value;if(v.trim())hist.unshift(v),hi=-1;tCmd(v);document.getElementById('ti').value='';}
+  else if(e.key==='ArrowUp'){e.preventDefault();if(hi<hist.length-1){hi++;document.getElementById('ti').value=hist[hi];}}
+  else if(e.key==='ArrowDown'){e.preventDefault();if(hi>0){hi--;document.getElementById('ti').value=hist[hi];}else{hi=-1;document.getElementById('ti').value='';}}
+});
+
+// ── GERÇEK IP SORGU ──
+function fetchIp(ip){
+  const url=ip?`https://ipapi.co/${ip}/json/`:'https://ipapi.co/json/';
+  fetch(url).then(r=>r.json()).then(d=>{
+    tPrint([{c:'b',v:`IP       : ${d.ip||'?'}`},{c:'b',v:`Ülke     : ${d.country_name||'?'}`},{c:'b',v:`Şehir    : ${d.city||'?'}`},{c:'b',v:`Bölge    : ${d.region||'?'}`},{c:'b',v:`ISP      : ${d.org||'?'}`},{c:'b',v:`Zaman D. : ${d.timezone||'?'}`},{c:d.threat?'r':'g',v:`Tehdit   : ${d.threat?'EVET':'Hayır'}`}]);
+  }).catch(()=>tPrint([{c:'r',v:'API hatası — internet bağlantısını kontrol et'}]));
+}
+
+function loadMyIp(){
+  fetch('https://ipapi.co/json/').then(r=>r.json()).then(d=>{
+    document.getElementById('myIp').textContent=`IP: ${d.ip} (${d.country_name})`;
+  }).catch(()=>{document.getElementById('myIp').textContent='IP: bağlanamadı';});
+}
+
+// ── ARAÇ MODAL ──
+let currentTool='';
+const toolConf={
+  ip:{title:'IP SORGULA',sub:'// GERÇEK IP BİLGİSİ',label:'IP Adresi (boş bırakırsan kendi IP\'n)',ph:'8.8.8.8'},
+  hash:{title:'HASH ÜRETİCİ',sub:'// MD5 + SHA-256',label:'Hashlenecek Metin',ph:'merhaba dünya'},
+  base64enc:{title:'BASE64 ENCODE',sub:'// METİNDEN BASE64',label:'Encode Edilecek Metin',ph:'gizli mesaj'},
+  base64dec:{title:'BASE64 DECODE',sub:'// BASE64\'TEN METİN',label:'Decode Edilecek Base64',ph:'Z2l6bGkgbWVzYWo='},
+  pass:{title:'ŞİFRE ÜRETİCİ',sub:'// GÜÇLÜ RASTGELE ŞİFRE',label:'Karakter Uzunluğu',ph:'16'},
+  whois:{title:'WHOIS SORGULA',sub:'// DOMAIN BİLGİSİ',label:'Domain Adı',ph:'google.com'},
+};
+function openTool(t){
+  currentTool=t;const c=toolConf[t];
+  document.getElementById('tmTitle').textContent=c.title;
+  document.getElementById('tmSub').textContent=c.sub;
+  document.getElementById('tmLabel').textContent=c.label;
+  document.getElementById('tmInput').placeholder=c.ph;
+  document.getElementById('tmInput').value='';
+  document.getElementById('toolResult').classList.remove('show');
+  openModal('toolModal');
+  setTimeout(()=>document.getElementById('tmInput').focus(),100);
+}
+document.getElementById('tmInput').addEventListener('keypress',e=>{if(e.key==='Enter')runToolQuery();});
+
+function runToolQuery(){
+  const val=document.getElementById('tmInput').value.trim();
+  const res=document.getElementById('toolResult');
+  const cnt=document.getElementById('trContent');
+  res.classList.add('show');
+  cnt.innerHTML='<div class="tr-loading">⠋ İşleniyor...</div>';
+
+  if(currentTool==='ip'){
+    const url=val?`https://ipapi.co/${val}/json/`:'https://ipapi.co/json/';
+    fetch(url).then(r=>r.json()).then(d=>{
+      cnt.innerHTML=tr([['IP',d.ip],['Ülke',d.country_name],['Şehir',d.city],['Bölge',d.region],['ISP/Org',d.org],['Zaman Dilimi',d.timezone],['Lat/Lon',`${d.latitude}, ${d.longitude}`],['Posta Kodu',d.postal]]);
+    }).catch(()=>{cnt.innerHTML='<div class="tr-val warn">API hatası</div>';});
+  }
+  else if(currentTool==='hash'){
+    if(!val){cnt.innerHTML='<div class="tr-val warn">Metin girin</div>';return;}
+    cnt.innerHTML=tr([['Girdi',val],['MD5',md5(val)],['SHA-256',sha256(val)]]);
+  }
+  else if(currentTool==='base64enc'){
+    if(!val){cnt.innerHTML='<div class="tr-val warn">Metin girin</div>';return;}
+    cnt.innerHTML=tr([['Girdi',val],['Base64',btoa(unescape(encodeURIComponent(val)))]]);
+  }
+  else if(currentTool==='base64dec'){
+    if(!val){cnt.innerHTML='<div class="tr-val warn">Base64 girin</div>';return;}
+    try{cnt.innerHTML=tr([['Base64',val],['Sonuç',decodeURIComponent(escape(atob(val)))]]);}
+    catch{cnt.innerHTML='<div class="tr-val warn">Geçersiz Base64</div>';}
+  }
+  else if(currentTool==='pass'){
+    const len=parseInt(val)||16;
+    cnt.innerHTML=tr([['Uzunluk',len+' karakter'],['Şifre 1',genPass(len)],['Şifre 2',genPass(len)],['Şifre 3',genPass(len)]]);
+  }
+  else if(currentTool==='whois'){
+    if(!val){cnt.innerHTML='<div class="tr-val warn">Domain girin</div>';return;}
+    fetch(`https://api.whoapi.com/?domain=${val}&r=whois&apikey=demokey`)
+      .then(r=>r.json()).then(d=>{
+        cnt.innerHTML=tr([['Domain',val],['Durum',d.status||'sorgulandi'],['Kayıt',d.date_created||'bilinmiyor'],['Bitiş',d.date_expires||'bilinmiyor']]);
+      }).catch(()=>{
+        cnt.innerHTML=tr([['Domain',val],['Not','Whois API için premium key gerekli'],['Alternatif',`who.is/whois/${val} adresini ziyaret et`]]);
+      });
+  }
+}
+
+function tr(rows){
+  return rows.map(r=>`<div class="tr-line"><span class="tr-key">${r[0]}: </span><span class="tr-val">${r[1]||'—'}</span></div>`).join('');
+}
+
+// ── HASH FONKSİYONLARI ──
+function md5(str){
+  function safeAdd(x,y){const lsw=(x&0xFFFF)+(y&0xFFFF);return((x>>16)+(y>>16)+(lsw>>16)<<16)|(lsw&0xFFFF);}
+  function bitRotateLeft(num,cnt){return(num<<cnt)|(num>>>(32-cnt));}
+  function md5cmn(q,a,b,x,s,t){return safeAdd(bitRotateLeft(safeAdd(safeAdd(a,q),safeAdd(x,t)),s),b);}
+  function md5ff(a,b,c,d,x,s,t){return md5cmn((b&c)|((~b)&d),a,b,x,s,t);}
+  function md5gg(a,b,c,d,x,s,t){return md5cmn((b&d)|(c&(~d)),a,b,x,s,t);}
+  function md5hh(a,b,c,d,x,s,t){return md5cmn(b^c^d,a,b,x,s,t);}
+  function md5ii(a,b,c,d,x,s,t){return md5cmn(c^(b|(~d)),a,b,x,s,t);}
+  const m=[];let i;const l=str.length;for(i=0;i<l;i++)m[i>>2]|=(str.charCodeAt(i)&0xFF)<<((i%4)*8);m[l>>2]|=0x80<<((l%4)*8);m[(((l+8)>>6)+1)*16-2]=l*8;let a=1732584193,b=-271733879,c=-1732584194,d=271733878;
+  for(i=0;i<m.length;i+=16){const oa=a,ob=b,oc=c,od=d;
+    a=md5ff(a,b,c,d,m[i],7,-680876936);d=md5ff(d,a,b,c,m[i+1],12,-389564586);c=md5ff(c,d,a,b,m[i+2],17,606105819);b=md5ff(b,c,d,a,m[i+3],22,-1044525330);
+    a=md5ff(a,b,c,d,m[i+4],7,-176418897);d=md5ff(d,a,b,c,m[i+5],12,1200080426);c=md5ff(c,d,a,b,m[i+6],17,-1473231341);b=md5ff(b,c,d,a,m[i+7],22,-45705983);
+    a=md5ff(a,b,c,d,m[i+8],7,1770035416);d=md5ff(d,a,b,c,m[i+9],12,-1958414417);c=md5ff(c,d,a,b,m[i+10],17,-42063);b=md5ff(b,c,d,a,m[i+11],22,-1990404162);
+    a=md5ff(a,b,c,d,m[i+12],7,1804603682);d=md5ff(d,a,b,c,m[i+13],12,-40341101);c=md5ff(c,d,a,b,m[i+14],17,-1502002290);b=md5ff(b,c,d,a,m[i+15],22,1236535329);
+    a=md5gg(a,b,c,d,m[i+1],5,-165796510);d=md5gg(d,a,b,c,m[i+6],9,-1069501632);c=md5gg(c,d,a,b,m[i+11],14,643717713);b=md5gg(b,c,d,a,m[i],20,-373897302);
+    a=md5gg(a,b,c,d,m[i+5],5,-701558691);d=md5gg(d,a,b,c,m[i+10],9,38016083);c=md5gg(c,d,a,b,m[i+15],14,-660478335);b=md5gg(b,c,d,a,m[i+4],20,-405537848);
+    a=md5gg(a,b,c,d,m[i+9],5,568446438);d=md5gg(d,a,b,c,m[i+14],9,-1019803690);c=md5gg(c,d,a,b,m[i+3],14,-187363961);b=md5gg(b,c,d,a,m[i+8],20,1163531501);
+    a=md5gg(a,b,c,d,m[i+13],5,-1444681467);d=md5gg(d,a,b,c,m[i+2],9,-51403784);c=md5gg(c,d,a,b,m[i+7],14,1735328473);b=md5gg(b,c,d,a,m[i+12],20,-1926607734);
+    a=md5hh(a,b,c,d,m[i+5],4,-378558);d=md5hh(d,a,b,c,m[i+8],11,-2022574463);c=md5hh(c,d,a,b,m[i+11],16,1839030562);b=md5hh(b,c,d,a,m[i+14],23,-35309556);
+    a=md5hh(a,b,c,d,m[i+1],4,-1530992060);d=md5hh(d,a,b,c,m[i+4],11,1272893353);c=md5hh(c,d,a,b,m[i+7],16,-155497632);b=md5hh(b,c,d,a,m[i+10],23,-1094730640);
+    a=md5hh(a,b,c,d,m[i+13],4,681279174);d=md5hh(d,a,b,c,m[i],11,-358537222);c=md5hh(c,d,a,b,m[i+3],16,-722521979);b=md5hh(b,c,d,a,m[i+6],23,76029189);
+    a=md5hh(a,b,c,d,m[i+9],4,-640364487);d=md5hh(d,a,b,c,m[i+12],11,-421815835);c=md5hh(c,d,a,b,m[i+15],16,530742520);b=md5hh(b,c,d,a,m[i+2],23,-995338651);
+    a=md5ii(a,b,c,d,m[i],6,-198630844);d=md5ii(d,a,b,c,m[i+7],10,1126891415);c=md5ii(c,d,a,b,m[i+14],15,-1416354905);b=md5ii(b,c,d,a,m[i+5],21,-57434055);
+    a=md5ii(a,b,c,d,m[i+12],6,1700485571);d=md5ii(d,a,b,c,m[i+3],10,-1894986606);c=md5ii(c,d,a,b,m[i+10],15,-1051523);b=md5ii(b,c,d,a,m[i+1],21,-2054922799);
+    a=md5ii(a,b,c,d,m[i+8],6,1873313359);d=md5ii(d,a,b,c,m[i+15],10,-30611744);c=md5ii(c,d,a,b,m[i+6],15,-1560198380);b=md5ii(b,c,d,a,m[i+13],21,1309151649);
+    a=md5ii(a,b,c,d,m[i+4],6,-145523070);d=md5ii(d,a,b,c,m[i+11],10,-1120210379);c=md5ii(c,d,a,b,m[i+2],15,718787259);b=md5ii(b,c,d,a,m[i+9],21,-343485551);
+    a=safeAdd(a,oa);b=safeAdd(b,ob);c=safeAdd(c,oc);d=safeAdd(d,od);
+  }
+  return[a,b,c,d].map(n=>('0000000'+((n<0)?(n+0x100000000).toString(16):n.toString(16))).slice(-8)).join('');
+}
+
+function sha256(str){
+  function rightRotate(value,amount){return(value>>>amount)|(value<<(32-amount));}
+  const mathPow=Math.pow;const maxWord=mathPow(2,32);
+  let result='';const words=[];const asciiBitLength=str.length*8;
+  let hash=[];let k=[];let primeCounter=0;
+  const isComposite={};
+  for(let candidate=2;primeCounter<64;candidate++){
+    if(!isComposite[candidate]){
+      for(let i=0;i<313;i+=candidate)isComposite[i]=candidate;
+      hash[primeCounter]=mathPow(candidate,.5)*maxWord|0;
+      k[primeCounter++]=mathPow(candidate,1/3)*maxWord|0;
+    }
+  }
+  str+='\x80';
+  while(str.length%64-56)str+='\x00';
+  for(let i=0;i<str.length;i++){const j=str.charCodeAt(i);if(j>>8)return;words[i>>2]|=j<<((3-i)%4*8);}
+  words[words.length]=((asciiBitLength/maxWord)|0);
+  words[words.length]=(asciiBitLength|0);
+  for(let j=0;j<words.length;){
+    const w=words.slice(j,j+=16);const oldHash=[...hash];
+    for(let i=0;i<64;i++){
+      const w15=w[i-15],w2=w[i-2];
+      const a=hash[0],e=hash[4];
+      const temp1=hash[7]+(rightRotate(e,6)^rightRotate(e,11)^rightRotate(e,25))+((e&hash[5])^((~e)&hash[6]))+k[i]+(w[i]=i<16?w[i]:(w[i-16]+(rightRotate(w15,7)^rightRotate(w15,18)^(w15>>>3))+w[i-7]+(rightRotate(w2,17)^rightRotate(w2,19)^(w2>>>10)))|0);
+      const temp2=(rightRotate(a,2)^rightRotate(a,13)^rightRotate(a,22))+((a&hash[1])^(a&hash[2])^(hash[1]&hash[2]));
+      hash=[(temp1+temp2)|0,a,hash[1],hash[2],(hash[3]+temp1)|0,e,hash[4],hash[5]];
+    }
+    for(let i=0;i<8;i++)hash[i]=(hash[i]+oldHash[i])|0;
+  }
+  for(let i=0;i<8;i++){for(let j=3;j+1;j--){const b=(hash[i]>>(j*8))&255;result+=((b<16)?0:'')+b.toString(16);}}
+  return result;
+}
+
+// ── ŞİFRE ÜRETİCİ ──
+function genPass(len){
+  const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
+  let p='';for(let i=0;i<len;i++)p+=chars[Math.floor(Math.random()*chars.length)];return p;
+}
+
+// ── SİBER DETAY ──
+const cyberData={
+  osint:{title:'OSINT & RECON',sub:'// AÇIK KAYNAK İSTİHBARATI',content:`
+    <p>OSINT (Open Source Intelligence), hedef hakkında <span class="highlight">kamuya açık kaynaklardan</span> bilgi toplama bilimidir.</p>
+    <h3>KULLANILAN ARAÇLAR</h3>
+    <ul>
+      <li>Maltego — görsel ilişki haritası</li>
+      <li>theHarvester — e-posta, subdomain, IP toplama</li>
+      <li>Shodan — internete açık cihazları tarama</li>
+      <li>Recon-ng — modüler recon framework</li>
+      <li>SpiderFoot — otomatik OSINT toplama</li>
+    </ul>
+    <h3>TEKNİKLER</h3>
+    <ul>
+      <li>Google Dorking: site:, inurl:, filetype: operatörleri</li>
+      <li>Sosyal medya analizi ve profil araştırma</li>
+      <li>WHOIS ve DNS kayıtları inceleme</li>
+      <li>Wayback Machine ile arşiv araştırması</li>
+      <li>Metadata analizi (EXIF verisi)</li>
+    </ul>
+    <h3>NEDEN ÖNEMLİ?</h3>
+    <p>Bir saldırganın hedefe dair ne kadar çok bilgisi varsa, saldırısı o kadar hassas olur. OSINT hem savunma hem de saldırı senaryolarında kritik rol oynar.</p>
+  `},
+  pentest:{title:'PENETRASYON TESTİ',sub:'// YETKİLİ SALDIRI SİMÜLASYONU',content:`
+    <p>Penetrasyon testi, sistemlerin <span class="highlight">güvenlik açıklarını</span> yetkili uzmanların gerçek saldırı senaryolarıyla tespit etmesi sürecidir.</p>
+    <h3>AŞAMALAR</h3>
+    <ul>
+      <li>1. Keşif (Reconnaissance) — hedef hakkında bilgi toplama</li>
+      <li>2. Tarama (Scanning) — açık port ve servis tespiti</li>
+      <li>3. Erişim Kazanma — zafiyetleri istismar etme</li>
+      <li>4. Erişimi Koruma — kalıcılık sağlama</li>
+      <li>5. Raporlama — bulgular ve düzeltme önerileri</li>
+    </ul>
+    <h3>POPÜLER ARAÇLAR</h3>
+    <ul>
+      <li>Metasploit Framework — istismar platformu</li>
+      <li>Burp Suite — web uygulama testi</li>
+      <li>Nmap — ağ keşif ve port tarama</li>
+      <li>Wireshark — paket analizi</li>
+      <li>Hydra — brute-force saldırıları</li>
+    </ul>
+    <h3>ETİK KURAL</h3>
+    <p>Pentest <span class="highlight">her zaman yazılı izin</span> ile yapılır. İzinsiz sistem testi yasadışıdır.</p>
+  `},
+  kripto:{title:'KRİPTOGRAFİ',sub:'// ŞİFRELEME BİLİMİ',content:`
+    <p>Kriptografi, bilgileri <span class="highlight">yetkisiz erişime karşı</span> korumak için matematiksel algoritma kullanma bilimidir.</p>
+    <h3>SİMETRİK ŞİFRELEME</h3>
+    <ul>
+      <li>AES-256 — günümüzde en güvenli standart</li>
+      <li>DES / 3DES — eski, artık zayıf</li>
+      <li>Blowfish — hızlı, esnek</li>
+    </ul>
+    <h3>ASİMETRİK ŞİFRELEME</h3>
+    <ul>
+      <li>RSA-2048/4096 — açık anahtar şifrelemesi</li>
+      <li>ECC — daha küçük anahtar, daha güçlü</li>
+      <li>Diffie-Hellman — anahtar değişim protokolü</li>
+    </ul>
+    <h3>HASH ALGORİTMALARI</h3>
+    <ul>
+      <li>SHA-256 / SHA-512 — güvenli, collision-resistant</li>
+      <li>MD5 — eskimiş, sadece checksum için</li>
+      <li>bcrypt / Argon2 — şifre hashleme için ideal</li>
+    </ul>
+    <p>Bu panelde <span class="highlight">gerçek MD5 ve SHA-256</span> hesaplama yapabilirsin — Araçlar sekmesine bak!</p>
+  `},
+  ag:{title:'AĞ GÜVENLİĞİ',sub:'// NETWORK SECURITY',content:`
+    <p>Ağ güvenliği, bilgisayar ağlarını <span class="highlight">yetkisiz erişim, kötüye kullanım ve saldırılardan</span> koruma disiplinidir.</p>
+    <h3>SALDIRI TÜRLERİ</h3>
+    <ul>
+      <li>Man-in-the-Middle (MitM) — iletişime müdahale</li>
+      <li>DDoS — servis dışı bırakma saldırısı</li>
+      <li>ARP Poisoning — yerel ağ saldırısı</li>
+      <li>DNS Spoofing — sahte DNS cevabı</li>
+      <li>Port Scanning — açık servis tespiti</li>
+    </ul>
+    <h3>SAVUNMA ARAÇLARI</h3>
+    <ul>
+      <li>Wireshark — trafik analizi ve paket yakalama</li>
+      <li>Snort / Suricata — IDS/IPS sistemleri</li>
+      <li>pfSense — açık kaynaklı firewall</li>
+      <li>Nmap — ağ haritası çıkarma</li>
+    </ul>
+    <h3>PROTOKOLLER</h3>
+    <ul>
+      <li>TLS 1.3 — şifreli bağlantı standardı</li>
+      <li>VPN — güvenli tünel</li>
+      <li>SSH — güvenli uzak bağlantı</li>
+    </ul>
+  `},
+  malware:{title:'MALWARE ANALİZİ',sub:'// KÖTÜ AMAÇLI YAZILIM',content:`
+    <p>Malware analizi, zararlı yazılımların <span class="highlight">nasıl çalıştığını anlamak</span> için yapılan sistematik inceleme sürecidir.</p>
+    <h3>MALWARE TÜRLERİ</h3>
+    <ul>
+      <li>Virus — diğer dosyalara bulaşır</li>
+      <li>Trojan — yararlı görünüp zararlı olan</li>
+      <li>Ransomware — dosyaları şifreler, fidye ister</li>
+      <li>Spyware — kullanıcıyı gözetler</li>
+      <li>Rootkit — sistem seviyesinde gizlenir</li>
+      <li>Worm — ağda kendini çoğaltır</li>
+    </ul>
+    <h3>ANALİZ YÖNTEMLERİ</h3>
+    <ul>
+      <li>Statik Analiz — kodu çalıştırmadan inceleme</li>
+      <li>Dinamik Analiz — sandbox ortamında çalıştırma</li>
+      <li>Tersine Mühendislik — assembly kodunu okuma</li>
+    </ul>
+    <h3>ARAÇLAR</h3>
+    <ul>
+      <li>IDA Pro / Ghidra — disassembler</li>
+      <li>Cuckoo Sandbox — otomatik analiz</li>
+      <li>VirusTotal — çoklu AV tarama</li>
+      <li>Process Monitor — sistem çağrısı takibi</li>
+    </ul>
+  `},
+  web:{title:'WEB GÜVENLİĞİ',sub:'// OWASP TOP 10',content:`
+    <p>Web güvenliği, web uygulamalarını <span class="highlight">siber saldırılardan koruma</span> ve güvenlik açıklarını tespit etme disiplinidir.</p>
+    <h3>OWASP TOP 10 SALDIRILAR</h3>
+    <ul>
+      <li>SQL Injection — veritabanına saldırı</li>
+      <li>XSS (Cross-Site Scripting) — script enjeksiyonu</li>
+      <li>CSRF — sahte istek yönlendirme</li>
+      <li>IDOR — yetkisiz nesne erişimi</li>
+      <li>Path Traversal — dizin aşımı</li>
+      <li>XXE — XML entity saldırısı</li>
+    </ul>
+    <h3>TEST ARAÇLARI</h3>
+    <ul>
+      <li>Burp Suite — proxy ve interceptor</li>
+      <li>OWASP ZAP — otomatik tarayıcı</li>
+      <li>SQLMap — SQL injection otomasyonu</li>
+      <li>Nikto — web server tarayıcısı</li>
+    </ul>
+    <h3>SAVUNMA</h3>
+    <ul>
+      <li>Parameterized queries kullan</li>
+      <li>CSP (Content Security Policy) uygula</li>
+      <li>Input validation ve sanitization yap</li>
+      <li>HTTPS ve güvenli cookie kullan</li>
+    </ul>
+  `}
+};
+
+function showCyber(key){
+  const d=cyberData[key];
+  document.getElementById('cmTitle').textContent=d.title;
+  document.getElementById('cmSub').textContent=d.sub;
+  document.getElementById('cmContent').innerHTML=d.content;
+  openModal('cyberModal');
+}
+
+// ── PROJE ──
+let projCount=2;
+function createProj(){
+  const n=document.getElementById('pName').value.trim();
+  const cat=document.getElementById('pCat').value||'Geliştirme';
+  if(!n)return;
+  const catClass={Pentest:'cat-pentest',OSINT:'cat-osint',Geliştirme:'cat-dev',Araştırma:'cat-osint','Ağ Analizi':'cat-net'};
+  const colors={Pentest:'var(--red)',OSINT:'var(--yellow)',Geliştirme:'var(--blue)',Araştırma:'var(--yellow)','Ağ Analizi':'var(--green)'};
+  
+  // Ortadaki listeye ekle
+  const div=document.createElement('div');div.className='proj-item';
+  div.innerHTML=`<div class="proj-dot" style="background:${colors[cat]||'var(--blue)'}"></div><div class="proj-name">${esc(n)}</div><span class="proj-cat ${catClass[cat]||'cat-dev'}">${cat.toUpperCase()}</span>`;
+  document.getElementById('projList').appendChild(div);
+
+  // Sol panele de ekle
+  const sdiv=document.createElement('div');sdiv.className='mi';sdiv.style.cssText='flex-direction:column;align-items:flex-start;gap:5px;';
+  sdiv.innerHTML=`<div style="display:flex;align-items:center;gap:8px;width:100%;"><div style="width:8px;height:8px;border-radius:50%;background:${colors[cat]||'var(--blue)'};flex-shrink:0;"></div><div class="mname" style="flex:1;">${esc(n)}</div><span class="mstat" style="color:${colors[cat]||'var(--blue)'};border-color:${colors[cat]||'var(--blue)'};font-size:10px;">${cat.substring(0,3).toUpperCase()}</span></div><div style="font-size:12px;color:var(--dim);padding-left:16px;">Yeni oluşturuldu</div>`;
+  document.getElementById('sidebarProjList').appendChild(sdiv);
+
+  projCount++;document.getElementById('statProj').textContent=projCount;
+  addActivity(`${usr}`, `"${n}" projesi oluşturuldu`);
+  closeModal('projModal');
+  document.getElementById('pName').value='';document.getElementById('pDesc').value='';document.getElementById('pCat').value='';
+  toast('✓ Proje oluşturuldu');
+}
+
+// ── AKTİVİTE ──
+function addActivity(user,text){
+  const div=document.createElement('div');div.className='act-item';
+  div.innerHTML=`<div class="act-time">az önce</div><div class="act-text"><span class="act-user">${user}</span> ${esc(text)}</div>`;
+  document.getElementById('actList').prepend(div);
+}
+
+// ── SOHBET ──
+function sendMsg(){
+  const i=document.getElementById('cin');const t=i.value.trim();if(!t)return;
+  const now=new Date();const time=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  const d=document.createElement('div');d.className='msg own';
+  d.innerHTML=`<div class="mmeta"><span class="n">${usr}</span><span>${time}</span></div><div class="mbub">${esc(t)}</div>`;
+  document.getElementById('chatMsgs').appendChild(d);i.value='';scrollChat();
+}
+function scrollChat(){const c=document.getElementById('chatMsgs');c.scrollTop=c.scrollHeight;}
+document.getElementById('cin').addEventListener('keypress',e=>{if(e.key==='Enter')sendMsg();});
+
+// ── KASA ──
+let vault=JSON.parse(localStorage.getItem('yeraltiVault')||'[]');
+function renderVault(){
+  const c=document.getElementById('vaultItems');c.innerHTML='';
+  vault.forEach((v,i)=>{
+    const d=document.createElement('div');d.className='vault-item';
+    d.innerHTML=`<div class="vi-name">${esc(v.name)}</div><div class="vi-pass">${'●'.repeat(v.pass.length)}</div><button class="vi-copy" onclick="copyVault(${i})">KOPYALA</button>`;
+    c.appendChild(d);
+  });
+}
+function addVault(){
+  const n=document.getElementById('vName').value.trim();
+  const p=document.getElementById('vPass').value.trim();
+  if(!n||!p)return;
+  vault.push({name:n,pass:p});localStorage.setItem('yeraltiVault',JSON.stringify(vault));
+  renderVault();document.getElementById('vName').value='';document.getElementById('vPass').value='';toast('✓ Kasaya eklendi');
+}
+function copyVault(i){navigator.clipboard.writeText(vault[i].pass).then(()=>toast('✓ Şifre kopyalandı'));}
+renderVault();
+
+// ── SAAT ──
+setInterval(()=>{document.getElementById('clk').textContent=new Date().toLocaleTimeString('tr-TR');},1000);
+document.getElementById('clk').textContent=new Date().toLocaleTimeString('tr-TR');
+
+// ESC ile modal kapat
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));}});
+</script>
+</body>
+</html>
