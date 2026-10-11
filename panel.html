@@ -554,7 +554,7 @@ canvas{position:fixed;inset:0;z-index:0;}
   </div>
 </div>
 
-<script type="module">
+<script>
 // ── PARTİKÜLLER ──
 const cv=document.getElementById('c'),cx=cv.getContext('2d');
 let W,H,ps=[];
@@ -978,52 +978,53 @@ function addActivity(user,text){
   document.getElementById('actList').prepend(div);
 }
 
-// ── FİREBASE GERÇEK ZAMANLI SOHBET ──
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+// ── FİREBASE ──
+const fbScript1 = document.createElement('script');
+fbScript1.type = 'module';
+fbScript1.textContent = `
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyDDhcpIxbpJHw8K4cLBhUBnnFgQU36jYUU",
+    authDomain: "yeralti-19504.firebaseapp.com",
+    databaseURL: "https://yeralti-19504-default-rtdb.firebaseio.com",
+    projectId: "yeralti-19504",
+    storageBucket: "yeralti-19504.firebasestorage.app",
+    messagingSenderId: "422563310013",
+    appId: "1:422563310013:web:27152599ad1e61cbe8cad4"
+  };
+  const fbApp = initializeApp(firebaseConfig);
+  const db = getDatabase(fbApp);
+  const msgsRef = ref(db, 'messages');
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDDhcpIxbpJHw8K4cLBhUBnnFgQU36jYUU",
-  authDomain: "yeralti-19504.firebaseapp.com",
-  databaseURL: "https://yeralti-19504-default-rtdb.firebaseio.com",
-  projectId: "yeralti-19504",
-  storageBucket: "yeralti-19504.firebasestorage.app",
-  messagingSenderId: "422563310013",
-  appId: "1:422563310013:web:27152599ad1e61cbe8cad4"
-};
+  // Mesajları dinle
+  onValue(msgsRef, (snapshot) => {
+    const chatMsgs = document.getElementById('chatMsgs');
+    chatMsgs.innerHTML = '<div class="csys">// ŞİFRELİ KANAL AKTİF</div>';
+    const data = snapshot.val();
+    if (data) {
+      const usr2 = localStorage.getItem('yeraltiUser') || 'admin';
+      Object.values(data).forEach(msg => {
+        const isOwn = msg.user === usr2;
+        const d = document.createElement('div');
+        d.className = 'msg ' + (isOwn ? 'own' : 'other');
+        d.innerHTML = '<div class="mmeta"><span class="n">'+msg.user+'</span><span>'+msg.time+'</span></div><div class="mbub">'+msg.text+'</div>';
+        chatMsgs.appendChild(d);
+      });
+    }
+    const c = document.getElementById('chatMsgs');
+    c.scrollTop = c.scrollHeight;
+  });
 
-const fbApp = initializeApp(firebaseConfig);
-const db = getDatabase(fbApp);
-const msgsRef = ref(db, 'messages');
-
-// Mesajları dinle — yeni mesaj gelince otomatik göster
-onValue(msgsRef, (snapshot) => {
-  const chatMsgs = document.getElementById('chatMsgs');
-  chatMsgs.innerHTML = '<div class="csys">// ŞİFRELİ KANAL AKTİF</div>';
-  const data = snapshot.val();
-  if (data) {
-    Object.values(data).forEach(msg => {
-      const isOwn = msg.user === usr;
-      const d = document.createElement('div');
-      d.className = `msg ${isOwn ? 'own' : 'other'}`;
-      d.innerHTML = `<div class="mmeta"><span class="n">${esc(msg.user)}</span><span>${msg.time}</span></div><div class="mbub">${esc(msg.text)}</div>`;
-      chatMsgs.appendChild(d);
-    });
-  }
-  scrollChat();
-});
-
-function sendMsg(){
-  const i=document.getElementById('cin');
-  const t=i.value.trim();
-  if(!t) return;
-  const now=new Date();
-  const time=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
-  push(msgsRef, { user: usr, text: t, time: time, ts: Date.now() });
-  i.value='';
-}
-function scrollChat(){const c=document.getElementById('chatMsgs');c.scrollTop=c.scrollHeight;}
-document.getElementById('cin').addEventListener('keypress',e=>{if(e.key==='Enter')sendMsg();});
+  // Mesaj gönder fonksiyonunu global yap
+  window._fbSend = function(text) {
+    const usr2 = localStorage.getItem('yeraltiUser') || 'admin';
+    const now = new Date();
+    const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+    push(msgsRef, { user: usr2, text: text, time: time, ts: Date.now() });
+  };
+`;
+document.head.appendChild(fbScript1);
 
 // ── KASA ──
 let vault=JSON.parse(localStorage.getItem('yeraltiVault')||'[]');
