@@ -1026,6 +1026,26 @@ fbScript1.textContent = `
 `;
 document.head.appendChild(fbScript1);
 
+// ── SOHBET ──
+function sendMsg(){
+  const i=document.getElementById('cin');
+  const t=i.value.trim();
+  if(!t) return;
+  if(window._fbSend){
+    window._fbSend(t);
+  } else {
+    const now=new Date();
+    const time=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+    const d=document.createElement('div');d.className='msg own';
+    d.innerHTML='<div class="mmeta"><span class="n">'+usr+'</span><span>'+time+'</span></div><div class="mbub">'+esc(t)+'</div>';
+    document.getElementById('chatMsgs').appendChild(d);
+    document.getElementById('chatMsgs').scrollTop=document.getElementById('chatMsgs').scrollHeight;
+  }
+  i.value='';
+}
+function scrollChat(){const c=document.getElementById('chatMsgs');c.scrollTop=c.scrollHeight;}
+document.getElementById('cin').addEventListener('keypress',e=>{if(e.key==='Enter')sendMsg();});
+
 // ── KASA ──
 let vault=JSON.parse(localStorage.getItem('yeraltiVault')||'[]');
 function renderVault(){
